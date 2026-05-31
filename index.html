@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RYFTAN — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,700;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#8B1A1A;
+  --red2:#5C0F0F;
+  --blk:#0D0800;
+  --blk2:#150C00;
+  --wht:#F0E2C0;
+  --ylw:#C8852A;
+  --cyn:#B87333;
+  --pnk:#8B4513;
+  --grn:#DAA520;
+}
+/* ── P5 FONT ON TITLES ── */
+.hero-name,.s-title,.panel-label,.proj-title,.tarif-name,.sk-name,.stat-n{font-family:'Bebas Neue',sans-serif;letter-spacing:4px;}
+/* ── GLITCH on hero name ── */
+@keyframes glitch-1{0%,100%{clip-path:inset(0 0 95% 0);transform:translate(-3px,0);}20%{clip-path:inset(30% 0 50% 0);transform:translate(3px,0);}40%{clip-path:inset(70% 0 10% 0);transform:translate(-2px,0);}60%{clip-path:inset(10% 0 80% 0);transform:translate(2px,0);}80%{clip-path:inset(50% 0 30% 0);transform:translate(-1px,0);}}
+@keyframes glitch-2{0%,100%{clip-path:inset(80% 0 5% 0);transform:translate(3px,0);}20%{clip-path:inset(10% 0 70% 0);transform:translate(-3px,0);}40%{clip-path:inset(50% 0 30% 0);transform:translate(2px,0);}60%{clip-path:inset(20% 0 60% 0);transform:translate(-2px,0);}80%{clip-path:inset(60% 0 20% 0);transform:translate(1px,0);}}
+.hero-name-wrap{position:relative;display:inline-block;}
+.hero-name-wrap::before,.hero-name-wrap::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;font-family:'Bebas Neue',sans-serif;font-size:inherit;letter-spacing:inherit;white-space:nowrap;}
+.hero-name-wrap::before{color:var(--cyn);animation:glitch-1 4s infinite steps(1);opacity:.6;}
+.hero-name-wrap::after{color:var(--pnk);animation:glitch-2 4s infinite steps(1);opacity:.6;}
+/* ── SECTION TITLE FLASH ── */
+@keyframes title-reveal{0%{opacity:0;transform:translateX(-20px) skewX(-5deg);}60%{opacity:1;transform:translateX(4px) skewX(1deg);}100%{opacity:1;transform:translateX(0) skewX(0deg);}}
+.s-title.animate{animation:title-reveal .5s ease forwards;}
+/* ── RED SWEEP on section entry ── */
+@keyframes red-sweep{0%{transform:translateX(-101%);}50%{transform:translateX(0);}100%{transform:translateX(101%);}}
+.s-head.in .s-title::before{content:'';position:absolute;inset:0;background:var(--red);animation:red-sweep .6s ease forwards;z-index:1;}
+/* ── CARD HOVER glitch ── */
+.skill-card:hover .sk-name,.proj-card:hover .proj-title{animation:glitch-txt .2s steps(2) 1;}
+@keyframes glitch-txt{0%{text-shadow:2px 0 var(--cyn),-2px 0 var(--pnk);}50%{text-shadow:-2px 0 var(--pnk),2px 0 var(--cyn);}100%{text-shadow:none;}}
+/* ── STAGGER reveals ── */
+.skill-card:nth-child(1){transition-delay:.0s;}.skill-card:nth-child(2){transition-delay:.1s;}.skill-card:nth-child(3){transition-delay:.2s;}
+.proj-card:nth-child(1){transition-delay:.0s;}.proj-card:nth-child(2){transition-delay:.12s;}
+.tarif-card:nth-child(1){transition-delay:.0s;}.tarif-card:nth-child(2){transition-delay:.1s;}.tarif-card:nth-child(3){transition-delay:.2s;}
+/* ── CONTENT ADMIN PANEL ── */
+#content-admin{position:fixed;inset:0;z-index:99996;background:rgba(4,4,4,.97);display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;}
+#content-admin.open{display:flex;}
+.cadmin-box{background:var(--blk2);border:2px solid var(--red);padding:24px;width:100%;max-width:560px;margin:auto;}
+.cadmin-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;color:var(--wht);margin-bottom:4px;}
+.cadmin-title span{color:var(--red);}
+.cadmin-sub{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2px;color:rgba(245,240,232,.3);margin-bottom:16px;}
+.cadmin-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap;}
+.cadmin-tab{font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:3px;color:rgba(245,240,232,.4);background:var(--blk);border:1px solid rgba(255,255,255,.08);padding:6px 14px;cursor:pointer;transition:all .15s;}
+.cadmin-tab.active{color:var(--wht);background:var(--red);border-color:var(--red);}
+.cadmin-panel{display:none;}.cadmin-panel.active{display:block;}
+.cadmin-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;margin-bottom:14px;}
+.cadmin-item{background:var(--blk);padding:10px 12px;border-left:2px solid var(--red);display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.cadmin-item-info{flex:1;min-width:0;}
+.cadmin-item-title{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:2px;color:var(--wht);}
+.cadmin-item-desc{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:rgba(245,240,232,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.cadmin-del{font-family:'Bebas Neue',sans-serif;font-size:.7rem;color:var(--red);background:none;border:1px solid rgba(232,0,29,.3);padding:2px 8px;cursor:pointer;flex-shrink:0;}
+.cadmin-del:hover{background:var(--red);color:var(--wht);}
+.cadmin-empty{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(245,240,232,.25);letter-spacing:2px;padding:4px;}
+.cadmin-label{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2px;color:rgba(245,240,232,.4);margin-bottom:4px;display:block;}
+.cadmin-input{width:100%;background:rgba(255,255,255,.04);border:none;border-bottom:2px solid rgba(232,0,29,.35);color:var(--wht);font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:7px 8px;outline:none;margin-bottom:10px;}
+.cadmin-input:focus{border-bottom-color:var(--red);}
+.cadmin-input::placeholder{color:rgba(245,240,232,.2);}
+.cadmin-textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(232,0,29,.2);color:var(--wht);font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:8px;outline:none;resize:vertical;min-height:70px;margin-bottom:10px;}
+.cadmin-textarea:focus{border-color:var(--red);}
+.cadmin-select{width:100%;background:var(--blk);border:none;border-bottom:2px solid rgba(232,0,29,.35);color:var(--wht);font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:7px 8px;outline:none;margin-bottom:10px;cursor:pointer;}
+.cadmin-save{font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:3px;color:var(--blk);background:var(--ylw);border:none;padding:10px 20px;cursor:pointer;width:100%;margin-top:4px;}
+.cadmin-save:hover{background:var(--wht);}
+.cadmin-close{position:fixed;top:14px;right:18px;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:rgba(245,240,232,.35);cursor:pointer;border:1px solid rgba(245,240,232,.15);padding:4px 10px;background:var(--blk);}
+.cadmin-close:hover{color:var(--wht);}
+.cadmin-sep{height:1px;background:rgba(255,255,255,.08);margin:14px 0;}
+/* ── VIDEO ADMIN PANEL ── */
+#video-admin{position:fixed;inset:0;z-index:99995;background:rgba(4,4,4,.96);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+#video-admin.open{display:flex;}
+.vadmin-box{background:var(--blk2);border:2px solid var(--red);padding:24px;width:100%;max-width:480px;}
+.vadmin-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;color:var(--wht);margin-bottom:16px;}
+.vadmin-title span{color:var(--red);}
+.vadmin-tabs{display:flex;gap:4px;margin-bottom:14px;}
+.vadmin-tab{font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:3px;color:rgba(245,240,232,.4);background:var(--blk);border:1px solid rgba(255,255,255,.08);padding:6px 14px;cursor:pointer;transition:all .15s;}
+.vadmin-tab.active{color:var(--wht);background:var(--red);border-color:var(--red);}
+.vadmin-list{display:flex;flex-direction:column;gap:8px;max-height:250px;overflow-y:auto;margin-bottom:14px;}
+.vadmin-item{display:flex;align-items:center;gap:8px;background:var(--blk);padding:8px 10px;border-left:2px solid var(--red);}
+.vadmin-item span{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(245,240,232,.55);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vadmin-del{font-family:'Bebas Neue',sans-serif;font-size:.7rem;color:var(--red);background:none;border:1px solid rgba(232,0,29,.3);padding:2px 8px;cursor:pointer;flex-shrink:0;}
+.vadmin-del:hover{background:var(--red);color:var(--wht);}
+.vadmin-add{display:flex;gap:8px;}
+.vadmin-input{flex:1;background:rgba(255,255,255,.04);border:none;border-bottom:2px solid rgba(232,0,29,.35);color:var(--wht);font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:7px 8px;outline:none;}
+.vadmin-input:focus{border-bottom-color:var(--red);}
+.vadmin-input::placeholder{color:rgba(245,240,232,.2);}
+.vadmin-save{font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:3px;color:var(--blk);background:var(--ylw);border:none;padding:8px 16px;cursor:pointer;transition:background .15s;}
+.vadmin-save:hover{background:var(--wht);}
+.vadmin-close{position:absolute;top:14px;right:18px;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:rgba(245,240,232,.35);cursor:pointer;border:1px solid rgba(245,240,232,.15);padding:4px 10px;}
+.vadmin-close:hover{color:var(--wht);}
+/* video grid in projects */
+.video-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;margin-top:3px;}
+.video-card{position:relative;background:var(--blk);border:1px solid rgba(255,255,255,.04);aspect-ratio:16/9;overflow:hidden;cursor:pointer;}
+.video-card iframe{width:100%;height:100%;border:none;}
+.video-card .no-vid{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(245,240,232,.18);font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:3px;text-align:center;gap:8px;}
+.video-card .no-vid svg{opacity:.2;}
+/* admin trigger */
+#admin-trigger{position:fixed;bottom:0;left:0;z-index:8001;font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2px;color:rgba(245,240,232,.15);padding:6px 10px;cursor:pointer;background:transparent;border:none;}
+#admin-trigger:hover{color:var(--red);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;background:var(--blk);}
+body{background:var(--blk);color:var(--wht);font-family:'Barlow Condensed',sans-serif;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;z-index:99998;}
+/* Steampunk copper overlay */
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 80% 20%,rgba(184,115,51,.04) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 20% 80%,rgba(200,133,42,.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
+#cur{position:fixed;width:12px;height:12px;background:var(--red);left:-100px;top:-100px;transform:rotate(45deg) translate(-50%,-50%);pointer-events:none;z-index:99999;transition:transform .08s,background .15s;opacity:0;}
+#cur.on{opacity:1;}#cur.big{transform:rotate(45deg) translate(-50%,-50%) scale(2.4);background:var(--ylw);}
+.has-mouse{cursor:none;}.has-mouse a,.has-mouse button{cursor:none;}
+#slash-overlay{position:fixed;inset:0;z-index:99990;pointer-events:none;display:flex;}
+.slash-panel{flex:1;background:var(--red);transform:scaleY(0);transform-origin:top;transition:transform .3s cubic-bezier(.77,0,.18,1);}
+.slash-panel:nth-child(1){transition-delay:0s;}.slash-panel:nth-child(2){transition-delay:.04s;}.slash-panel:nth-child(3){transition-delay:.08s;}.slash-panel:nth-child(4){transition-delay:.12s;}.slash-panel:nth-child(5){transition-delay:.16s;}
+#slash-overlay.in .slash-panel{transform:scaleY(1);}
+#slash-overlay.out .slash-panel{transform:scaleY(0);transform-origin:bottom;}
+#slash-overlay.out .slash-panel:nth-child(1){transition-delay:.16s;}#slash-overlay.out .slash-panel:nth-child(2){transition-delay:.12s;}#slash-overlay.out .slash-panel:nth-child(3){transition-delay:.08s;}#slash-overlay.out .slash-panel:nth-child(4){transition-delay:.04s;}#slash-overlay.out .slash-panel:nth-child(5){transition-delay:0s;}
+/* TOPBAR */
+#topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--blk);z-index:8000;display:flex;align-items:stretch;border-bottom:3px solid var(--red);overflow:hidden;}
+#topbar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:230px;background:var(--red);clip-path:polygon(0 0,88% 0,100% 100%,0 100%);z-index:0;}
+#burger{position:relative;z-index:2;display:flex;flex-direction:column;gap:5px;background:transparent;border:none;outline:none;padding:14px 14px 14px 12px;cursor:pointer;flex-shrink:0;}
+#burger span{display:block;width:22px;height:2px;background:var(--wht);transition:transform .3s,opacity .2s;transform-origin:center;}
+#burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}#burger.open span:nth-child(2){opacity:0;}#burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+#topbar-logo{position:relative;z-index:2;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:6px;color:var(--wht);display:flex;align-items:center;padding:0 40px 0 6px;}
+#lang-switcher{position:relative;z-index:2;display:flex;align-items:center;margin-left:auto;border-left:1px solid rgba(232,0,29,.3);}
+.lang-btn{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:3px;color:rgba(245,240,232,.35);background:transparent;border:none;padding:0 14px;height:100%;cursor:pointer;transition:all .2s;border-right:1px solid rgba(255,255,255,.06);}
+.lang-btn.active{color:var(--wht);background:rgba(232,0,29,.2);}
+.lang-btn:hover:not(.active){color:var(--wht);}
+#topbar-status{position:relative;z-index:2;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--red);display:flex;align-items:center;padding:0 12px;animation:blink 1.5s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@media(max-width:600px){#topbar-status{display:none;}}
+#mode-badge{position:fixed;bottom:0;right:0;z-index:8001;font-family:'Bebas Neue',sans-serif;font-size:.72rem;letter-spacing:3px;padding:8px 16px;}
+#mode-badge.mobile{background:var(--cyn);color:#000;}#mode-badge.desktop{background:var(--red);color:var(--wht);}
+/* MENU */
+#p5-overlay{position:fixed;inset:0;z-index:9000;pointer-events:none;visibility:hidden;}
+#p5-overlay.open{pointer-events:all;visibility:visible;}
+#p5-bg{position:absolute;inset:0;background:rgba(4,4,4,.96);opacity:0;transition:opacity .25s;}
+#p5-overlay.open #p5-bg{opacity:1;}
+#p5-red{position:absolute;top:0;right:0;bottom:0;width:38%;background:var(--red);clip-path:polygon(30% 0,100% 0,100% 100%,0 100%);opacity:0;transition:opacity .25s .08s;}
+#p5-overlay.open #p5-red{opacity:1;}
+#p5-red::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 10px,rgba(0,0,0,.22) 10px,rgba(0,0,0,.22) 11px);}
+#p5-lines{position:absolute;left:0;top:0;bottom:0;width:8px;display:flex;flex-direction:column;opacity:0;transition:opacity .3s .2s;}
+#p5-overlay.open #p5-lines{opacity:1;}
+.p5-line-seg{flex:1;background:var(--red);margin:1px 0;}.p5-line-seg:nth-child(even){background:var(--blk);}
+#p5-panels{position:absolute;left:14px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;padding-left:46px;gap:3px;width:min(480px,60vw);}
+.p5-panel-wrap{position:relative;transform:translateX(-120%);transition:transform .4s cubic-bezier(.77,0,.18,1);}
+.p5-panel-wrap:nth-child(1){transition-delay:.04s;}.p5-panel-wrap:nth-child(2){transition-delay:.09s;}.p5-panel-wrap:nth-child(3){transition-delay:.14s;}.p5-panel-wrap:nth-child(4){transition-delay:.19s;}.p5-panel-wrap:nth-child(5){transition-delay:.24s;}.p5-panel-wrap:nth-child(6){transition-delay:.29s;}
+#p5-overlay.open .p5-panel-wrap{transform:translateX(0);}
+.panel-badge{position:absolute;left:-44px;top:50%;font-family:'Bebas Neue',sans-serif;font-size:.48rem;letter-spacing:2px;padding:3px 5px;writing-mode:vertical-rl;transform:translateY(-50%) rotate(180deg);z-index:5;line-height:1;color:#000;}
+.p5-panel{position:relative;display:flex;align-items:center;height:68px;background:var(--blk2);border:2.5px solid rgba(255,255,255,.85);clip-path:polygon(0 0,93% 0,96% 12%,100% 28%,98% 52%,100% 70%,95% 100%,0 100%);padding:0 28px 0 10px;cursor:pointer;color:var(--wht);text-decoration:none;overflow:hidden;transition:background .12s;margin-bottom:2px;}
+.p5-panel::before{content:'';position:absolute;inset:0;background:var(--red);transform:translateX(-101%);transition:transform .18s ease;z-index:0;}
+.p5-panel::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ylw);opacity:0;transition:opacity .12s;z-index:2;}
+.p5-panel:hover::before,.p5-panel.active::before{transform:translateX(0);}
+.p5-panel:hover::after,.p5-panel.active::after{opacity:1;}
+.p5-panel.active{box-shadow:0 0 18px rgba(232,0,29,.35);}
+.panel-portrait{position:relative;z-index:1;width:48px;height:52px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);margin-right:10px;flex-shrink:0;transition:all .12s;}
+.panel-portrait svg{width:22px;height:22px;stroke:rgba(255,255,255,.55);transition:stroke .12s;}
+.p5-panel:hover .panel-portrait,.p5-panel.active .panel-portrait{background:rgba(255,255,255,.18);border-color:var(--ylw);}
+.p5-panel:hover .panel-portrait svg,.p5-panel.active .panel-portrait svg{stroke:var(--ylw);}
+.panel-info{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;gap:3px;}
+.panel-label{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:5px;color:var(--wht);line-height:1;}
+.panel-stats{display:flex;gap:10px;}
+.bar-wrap{display:flex;align-items:center;gap:4px;}
+.bar-label{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;}
+.bar-label.hp{color:var(--cyn);}.bar-label.sp{color:var(--pnk);}
+.bar{height:5px;background:rgba(255,255,255,.1);position:relative;overflow:hidden;width:55px;}
+.bar-fill{height:100%;position:absolute;left:0;top:0;width:0;transition:width .9s ease .2s;}
+.bar-fill.hp{background:var(--cyn);}.bar-fill.sp{background:var(--pnk);}
+.panel-arrow{position:relative;z-index:1;font-size:.8rem;color:var(--ylw);margin-left:4px;flex-shrink:0;opacity:0;transform:translateX(-5px);transition:opacity .12s,transform .12s;}
+.p5-panel:hover .panel-arrow,.p5-panel.active .panel-arrow{opacity:1;transform:translateX(0);}
+#p5-info{position:absolute;right:0;top:0;bottom:0;width:calc(100% - min(510px,64vw));display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding-right:4vw;opacity:0;transform:translateX(20px);transition:opacity .35s .28s,transform .35s .28s;}
+#p5-overlay.open #p5-info{opacity:1;transform:translateX(0);}
+#p5-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,5vw,5rem);letter-spacing:5px;color:var(--wht);text-align:right;line-height:.88;text-shadow:4px 4px 0 var(--red2);}
+#p5-name b{color:var(--red);font-weight:400;}
+#p5-role{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-style:italic;letter-spacing:3px;color:rgba(245,240,232,.4);text-align:right;margin-top:8px;text-transform:uppercase;}
+.p5-deco{margin-top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.p5-deco-line{height:3px;background:var(--red);animation:pulse 2s ease-in-out infinite;}
+.p5-deco-line:nth-child(1){width:100px;}.p5-deco-line:nth-child(2){width:68px;animation-delay:.3s;}.p5-deco-line:nth-child(3){width:40px;animation-delay:.6s;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.18}}
+#p5-hint{margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;color:rgba(245,240,232,.22);text-align:right;animation:blink 2s step-end infinite;}
+#p5-close{position:absolute;bottom:20px;left:20px;font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:3px;color:rgba(245,240,232,.4);opacity:0;transition:opacity .4s .5s;cursor:pointer;padding:6px 12px;border:1px solid rgba(245,240,232,.2);}
+#p5-close:hover{color:var(--wht);border-color:rgba(245,240,232,.4);}
+#p5-overlay.open #p5-close{opacity:1;}
+/* HERO */
+#hero{min-height:100vh;display:flex;align-items:center;padding-top:52px;position:relative;overflow:hidden;background:var(--blk);}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(232,0,29,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,0,29,.04) 1px,transparent 1px);background-size:40px 40px;z-index:0;}
+.hero-slash{position:absolute;top:0;right:-6%;width:50%;height:100%;background:var(--red);clip-path:polygon(20% 0,100% 0,100% 100%,0 100%);z-index:0;}
+.hero-slash::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-58deg,transparent,transparent 16px,rgba(0,0,0,.2) 16px,rgba(0,0,0,.2) 17px);}
+.scanline{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,transparent 0%,rgba(232,0,29,.045) 50%,transparent 100%);animation:scan 4s linear infinite;z-index:1;}
+@keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
+.particle{position:absolute;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);pointer-events:none;animation:float-p linear infinite;opacity:0;z-index:1;}
+@keyframes float-p{0%{opacity:0;transform:translateY(0) rotate(0deg);}10%{opacity:.7;}90%{opacity:.3;}100%{opacity:0;transform:translateY(-110vh) rotate(720deg);}}
+.hero-content{position:relative;z-index:2;max-width:580px;padding:0 5vw;}
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:5px;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:8px;opacity:0;animation:fi .5s .2s ease forwards;}
+.hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--red);flex-shrink:0;}
+.hero-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,12vw,8.5rem);line-height:.88;letter-spacing:3px;color:var(--wht);text-shadow:5px 5px 0 var(--red2);white-space:nowrap;}
+.hero-name .char{display:inline-block;opacity:0;transform:translateY(40px);animation:char-in .35s ease forwards;}
+.hero-name b{color:var(--red);font-weight:400;}
+.hero-sub{font-size:clamp(.88rem,1.8vw,1.1rem);font-style:italic;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(245,240,232,.75);margin-top:10px;opacity:0;animation:fi .5s .9s ease forwards;}
+.hero-btns{display:flex;gap:10px;margin-top:24px;opacity:0;animation:fi .5s 1.1s ease forwards;flex-wrap:wrap;}
+.btn{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:4px;padding:11px 28px;text-decoration:none;display:inline-block;position:relative;overflow:hidden;transition:color .2s;}
+.btn-w{background:var(--wht);color:var(--blk);clip-path:polygon(0 0,92% 0,100% 100%,8% 100%);}
+.btn-w::after{content:'';position:absolute;inset:0;background:var(--red);transform:translateX(-101%);transition:transform .2s;z-index:0;}
+.btn-w span{position:relative;z-index:1;}
+.btn-w:hover::after{transform:translateX(0);}.btn-w:hover{color:var(--wht);}
+.btn-o{color:var(--wht);border:2px solid rgba(245,240,232,.45);clip-path:polygon(0 0,92% 0,100% 100%,8% 100%);}
+.btn-o:hover{border-color:var(--red);color:var(--red);}
+.hero-cards{position:absolute;right:3.5vw;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;gap:8px;opacity:0;animation:fi .7s 1.3s ease forwards;}
+.hcard{background:rgba(5,5,5,.92);border-left:4px solid var(--red);padding:9px 14px;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--wht);min-width:195px;clip-path:polygon(0 0,100% 0,94% 100%,0 100%);transition:transform .2s,border-color .2s;}
+.hcard:hover{transform:translateX(7px);border-color:var(--ylw);}.hcard .lbl{color:var(--red);font-size:.52rem;margin-bottom:2px;}
+@keyframes fi{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes char-in{to{opacity:1;transform:translateY(0)}}
+/* SECTIONS */
+section{position:relative;padding:95px 5vw 75px;overflow:hidden;z-index:1;}
+section::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--red);clip-path:polygon(0 0,100% 0,99% 100%,1% 100%);}
+.s-head{display:flex;align-items:center;gap:16px;margin-bottom:46px;}
+.s-num{font-family:'Bebas Neue',sans-serif;font-size:4.5rem;color:var(--red);opacity:.1;line-height:1;user-select:none;flex-shrink:0;}
+.s-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:5px;color:var(--red);text-transform:uppercase;margin-bottom:4px;}
+.s-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4.5vw,3.5rem);letter-spacing:4px;line-height:1;color:var(--wht);position:relative;overflow:hidden;}
+.s-title::after{content:'';display:block;width:45px;height:4px;background:var(--red);margin-top:7px;clip-path:polygon(0 0,88% 0,100% 100%,12% 100%);}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .55s ease,transform .55s ease;}
+.reveal-left{opacity:0;transform:translateX(-32px);transition:opacity .55s ease,transform .55s ease;}
+.reveal-right{opacity:0;transform:translateX(32px);transition:opacity .55s ease,transform .55s ease;}
+.reveal.in,.reveal-left.in,.reveal-right.in{opacity:1;transform:none;}
+/* ABOUT */
+#about{background:var(--blk2);}
+.avatar-wrap{display:flex;justify-content:center;margin-bottom:22px;}
+.avatar{width:110px;height:110px;border-radius:50%;border:3px solid var(--red);object-fit:cover;object-position:center top;box-shadow:0 0 0 5px rgba(232,0,29,.12),4px 4px 0 var(--red2);filter:brightness(.95) saturate(.9);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;}
+.about-text p{font-size:1.08rem;line-height:1.82;color:rgba(245,240,232,.76);margin-bottom:14px;font-style:italic;}
+.about-text strong{color:var(--red);font-style:normal;}
+.stats{display:flex;flex-direction:column;gap:12px;}
+.stat{background:var(--blk);border-left:4px solid var(--red);padding:14px 18px;clip-path:polygon(0 0,97% 0,100% 100%,3% 100%);transition:transform .2s;}
+.stat:hover{transform:translateX(7px);}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--red);line-height:1;}
+.stat-l{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:3px;color:rgba(245,240,232,.45);text-transform:uppercase;margin-top:2px;}
+/* SKILLS */
+#skills{background:var(--blk);}
+.skills-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+.skill-card{background:var(--blk2);padding:28px 20px;position:relative;overflow:hidden;border-bottom:3px solid transparent;transition:transform .2s,border-color .2s;}
+.skill-card:hover{transform:translateY(-4px);border-bottom-color:var(--red);}
+.skill-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .28s;}
+.skill-card:hover::before{transform:scaleX(1);}
+.sk-icon{width:48px;height:48px;margin-bottom:12px;opacity:.75;transition:opacity .2s;}
+.skill-card:hover .sk-icon{opacity:1;}
+.sk-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:3px;color:var(--wht);margin-bottom:9px;}
+.sk-desc{font-size:.94rem;line-height:1.7;color:rgba(245,240,232,.6);font-style:italic;}
+.sk-tag{display:inline-block;margin-top:11px;font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:3px;color:var(--red);border:1px solid rgba(232,0,29,.35);padding:2px 9px;clip-path:polygon(0 0,88% 0,100% 100%,12% 100%);}
+/* ÉCRITURE */
+#projects{background:var(--blk2);}
+.writing-tabs{display:flex;gap:0;margin-bottom:0;}
+.wtab{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:4px;color:rgba(245,240,232,.35);background:var(--blk);border:2px solid rgba(255,255,255,.08);border-bottom:none;padding:9px 18px;cursor:pointer;clip-path:polygon(0 0,92% 0,100% 100%,8% 100%);transition:all .18s;}
+.wtab.active{color:var(--wht);background:var(--red);border-color:var(--red);}
+.wtab:hover:not(.active){color:var(--wht);border-color:rgba(232,0,29,.35);}
+.writing-content{border-top:3px solid var(--red);padding-top:18px;}
+.writing-panel{display:none;}.writing-panel.active{display:block;animation:panel-in .28s ease;}
+@keyframes panel-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.proj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;}
+.proj-card{background:var(--blk);padding:24px 20px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.04);transition:transform .18s;}
+.proj-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:top;transition:transform .3s;}
+.proj-card:hover{transform:translateX(4px);}.proj-card:hover::before{transform:scaleY(1);}
+.proj-n{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--red);opacity:.06;position:absolute;top:6px;right:12px;line-height:1;}
+.proj-type{font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-bottom:9px;}
+.proj-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--wht);margin-bottom:10px;line-height:1.1;}
+.proj-desc{font-size:.92rem;line-height:1.7;color:rgba(245,240,232,.55);font-style:italic;margin-bottom:14px;}
+.proj-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.ptag{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2px;color:var(--wht);background:rgba(232,0,29,.12);border:1px solid rgba(232,0,29,.25);padding:2px 7px;}
+/* TARIFS */
+#tarifs{background:var(--blk);}
+.tarifs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+.tarif-card{background:var(--blk2);border-top:4px solid var(--red);padding:22px 16px;position:relative;overflow:hidden;clip-path:polygon(0 0,100% 0,97% 100%,3% 100%);transition:transform .22s,border-top-color .22s;}
+.tarif-card:hover{transform:translateY(-5px);border-top-color:var(--ylw);}
+.tarif-card.featured{border-top-color:var(--ylw);background:rgba(232,0,29,.05);}
+.tarif-card.featured::before{content:'★ POPULAIRE';position:absolute;top:8px;right:0;font-family:'Bebas Neue',sans-serif;font-size:.56rem;letter-spacing:3px;background:var(--ylw);color:var(--blk);padding:3px 10px;clip-path:polygon(10% 0,100% 0,100% 100%,0 100%);}
+.tarif-badge{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-bottom:5px;}
+.tarif-card.featured .tarif-badge{color:var(--ylw);}
+.tarif-name{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;color:var(--wht);line-height:1;margin-bottom:12px;}
+.tarif-num{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:var(--wht);letter-spacing:2px;display:block;margin-bottom:10px;}
+.tarif-card.featured .tarif-num{color:var(--ylw);}
+.tarif-sep{height:2px;background:rgba(232,0,29,.28);clip-path:polygon(0 0,94% 0,100% 100%,6% 100%);margin-bottom:12px;}
+.tarif-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.tarif-list li{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;color:rgba(245,240,232,.68);font-style:italic;}
+.tarif-btn{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:4px;color:var(--wht);background:var(--red);padding:8px 18px;text-decoration:none;clip-path:polygon(0 0,90% 0,100% 100%,10% 100%);transition:background .18s,transform .14s;}
+.tarif-btn:hover{background:var(--red2);transform:translateX(4px);}
+.tarif-card.featured .tarif-btn{background:var(--ylw);color:var(--blk);}
+/* CONTACT */
+#contact{background:var(--blk2);}
+.contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:40px;align-items:start;}
+.ctxt{font-size:1rem;color:rgba(245,240,232,.62);font-style:italic;margin-bottom:20px;line-height:1.7;}
+.clinks{display:flex;flex-direction:column;gap:8px;}
+.clink{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:4px;color:var(--wht);text-decoration:none;display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(232,0,29,.07);border-left:3px solid var(--red);clip-path:polygon(0 0,96% 0,100% 100%,4% 100%);transition:background .18s,transform .18s;}
+.clink:hover{background:rgba(232,0,29,.18);transform:translateX(7px);}.clink svg{flex-shrink:0;opacity:.65;}
+.contact-form-wrap{background:var(--blk);border:2px solid rgba(255,255,255,.06);border-top:4px solid var(--red);clip-path:polygon(0 0,100% 0,98% 98%,2% 100%);overflow:hidden;}
+.form-header{background:var(--red);padding:8px 16px;}
+.form-tag{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:4px;color:var(--wht);}
+.p5-form{padding:18px 16px;display:flex;flex-direction:column;gap:12px;}
+.form-field{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;color:var(--red);text-transform:uppercase;}
+.form-input{background:rgba(255,255,255,.04);border:none;border-bottom:2px solid rgba(232,0,29,.35);color:var(--wht);font-family:'Barlow Condensed',sans-serif;font-size:.95rem;padding:8px 10px;outline:none;transition:border-color .2s;width:100%;}
+.form-input:focus{border-bottom-color:var(--red);}.form-input::placeholder{color:rgba(245,240,232,.22);}
+.form-textarea{resize:none;height:80px;font-family:'Barlow Condensed',sans-serif;}
+.form-choices{display:flex;flex-wrap:wrap;gap:6px;}
+.form-choice{font-family:'Bebas Neue',sans-serif;font-size:.76rem;letter-spacing:3px;color:rgba(245,240,232,.4);background:transparent;border:1px solid rgba(255,255,255,.1);padding:4px 10px;cursor:pointer;clip-path:polygon(0 0,88% 0,100% 100%,12% 100%);transition:all .14s;}
+.form-choice:hover,.form-choice.selected{background:var(--red);color:var(--wht);border-color:var(--red);}
+.form-submit{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:5px;color:var(--blk);background:var(--wht);border:none;padding:11px 22px;display:flex;align-items:center;justify-content:center;gap:8px;clip-path:polygon(0 0,93% 0,100% 100%,7% 100%);cursor:pointer;position:relative;overflow:hidden;width:100%;}
+.form-submit::after{content:'';position:absolute;inset:0;background:var(--red);transform:translateX(-101%);transition:transform .22s;z-index:0;}
+.form-submit span,.form-submit svg{position:relative;z-index:1;}
+.form-submit:hover::after{transform:translateX(0);}.form-submit:hover{color:var(--wht);}
+footer{background:var(--blk);border-top:3px solid var(--red);padding:14px 5vw;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;}
+.flogo{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:4px;color:var(--red);}
+.fcopy{font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:2px;color:rgba(245,240,232,.25);}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .about-grid,.skills-grid,.proj-grid,.tarifs-grid,.contact-grid{grid-template-columns:1fr !important;gap:10px;}
+  section{padding:62px 4vw 42px;}
+  #hero{padding-top:58px;overflow:hidden;}
+  .hero-cards{display:none;}.hero-slash{width:22%;right:-3%;}
+  .hero-content{padding:0 4vw;max-width:100%;}
+  .hero-name{font-size:clamp(2.5rem,13vw,4rem) !important;white-space:nowrap;}
+  .hero-sub{font-size:.85rem;}
+  .hero-btns{flex-direction:column !important;align-items:flex-start;gap:8px;margin-top:18px;}
+  .btn{clip-path:none !important;font-size:.85rem;padding:10px 22px;}
+  #topbar::before{width:185px;}#topbar-logo{font-size:1.2rem;padding-right:28px;}
+  #p5-panels{width:100%;padding-left:44px;}#p5-info{display:none;}
+  .p5-panel{height:58px;clip-path:none;border-right:none;}
+  .panel-label{font-size:1.15rem;letter-spacing:2px;}
+  .panel-portrait{width:38px;height:38px;}.panel-portrait svg{width:16px;height:16px;}
+  .panel-badge{font-size:.38rem;left:-38px;padding:2px 4px;}
+  .bar{width:40px !important;}
+  .s-num{font-size:2.8rem;}.s-title{font-size:clamp(1.5rem,6vw,2.2rem);}.s-head{gap:9px;margin-bottom:24px;}
+  .stat{clip-path:none;}.sk-tag{clip-path:none;}
+  .wtab{clip-path:none !important;font-size:.78rem;padding:7px 10px;letter-spacing:2px;}
+  .tarif-card{clip-path:none !important;padding:18px 13px;}.tarif-btn{clip-path:none;}
+  .contact-form-wrap{clip-path:none;}.clink{clip-path:none;}.form-choice{clip-path:none;}
+  .form-submit{clip-path:none;}
+  footer{flex-direction:column;gap:5px;text-align:center;padding:12px 4vw;}
+  #mode-badge{font-size:.68rem;padding:7px 12px;}
+}
+@media(max-width:400px){.hero-name{font-size:clamp(2rem,12vw,3rem) !important;}}
+/* ── TESTIMONIAL ── */
+#testimonial{padding:80px 5vw 60px;max-width:900px;margin:0 auto;}
+.testi-wrap{display:flex;justify-content:center;}
+.testi-card{position:relative;background:var(--blk2);border:2px solid rgba(139,26,26,.4);padding:48px 44px 36px;max-width:780px;width:100%;}
+.testi-card::before{content:'';position:absolute;top:0;left:0;width:6px;height:100%;background:var(--red);}
+.testi-quote{font-family:'Bebas Neue',sans-serif;font-size:6rem;color:var(--red);line-height:.6;margin-bottom:16px;opacity:.5;}
+.testi-text{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-style:italic;color:rgba(240,226,192,.75);line-height:1.7;margin-bottom:28px;letter-spacing:.3px;}
+.testi-author{display:flex;align-items:center;gap:16px;}
+.testi-line{width:40px;height:2px;background:var(--red);flex-shrink:0;}
+.testi-info{display:flex;flex-direction:column;gap:3px;}
+.testi-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:4px;color:var(--wht);}
+.testi-role{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:var(--ylw);}
+@media(max-width:600px){.testi-card{padding:32px 22px 24px;}.testi-text{font-size:.95rem;}}
+/* ── LOADING BAR ── */
+#loading{position:fixed;inset:0;z-index:999999;background:#0A0000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s .1s;}
+#loading.done{opacity:0;pointer-events:none;}
+.load-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,8vw,5rem);letter-spacing:8px;color:#F0E2C0;margin-bottom:4px;}
+.load-name b{color:#CC0000;}
+.load-sub{font-family:'Share Tech Mono',monospace;font-size:.48rem;letter-spacing:4px;color:rgba(240,226,192,.25);margin-bottom:32px;}
+.load-bar-wrap{width:220px;height:2px;background:rgba(255,255,255,.06);}
+.load-bar{height:100%;width:0%;background:linear-gradient(90deg,#8B0000,#CC0000);transition:width .04s linear;}
+.load-pct{font-family:'Share Tech Mono',monospace;font-size:.45rem;letter-spacing:3px;color:rgba(240,226,192,.25);margin-top:10px;text-align:center;}
+
+/* ── SPLASH MENU PERSONA ── */
+#splash{position:fixed;inset:0;z-index:99999;display:none;font-family:'Bebas Neue',sans-serif;}
+#splash.show{display:flex;}
+#splash.out{animation:splashOut .6s forwards;}
+@keyframes splashOut{to{opacity:0;pointer-events:none;}}
+/* Trois sections */
+.spl-root{width:100%;height:100%;display:flex;overflow:hidden;}
+.spl-p5{position:relative;flex:1;overflow:hidden;background:#0A0000;cursor:pointer;}
+.spl-p4{position:relative;flex:1;overflow:hidden;background:#F0C000;cursor:pointer;}
+.spl-p3{position:relative;flex:1;overflow:hidden;cursor:pointer;}
+/* Lames */
+.spl-lame{position:absolute;top:0;bottom:0;width:52px;z-index:20;pointer-events:none;right:-26px;}
+.spl-la{position:absolute;inset:0;clip-path:polygon(0 0,55% 0,27% 100%,0 100%);}
+.spl-lb{position:absolute;inset:0;clip-path:polygon(55% 0,100% 0,73% 100%,27% 100%);}
+.spl-lm1 .spl-la{background:#CC0000;}.spl-lm1 .spl-lb{background:#D4AA00;}
+.spl-lm2 .spl-la{background:#D4AA00;}.spl-lm2 .spl-lb{background:#0055CC;}
+/* P5R */
+.spl-p5-hatch{position:absolute;inset:0;background:repeating-linear-gradient(-65deg,transparent,transparent 10px,rgba(180,0,0,.2) 10px,rgba(180,0,0,.2) 12px);}
+.spl-p5-b1{position:absolute;top:0;left:0;width:9px;height:100%;background:#CC0000;z-index:3;}
+.spl-p5-b2{position:absolute;top:0;left:13px;width:2px;height:100%;background:rgba(200,0,0,.25);z-index:3;}
+.spl-p5-brk{position:absolute;top:16px;left:16px;width:18px;height:18px;border-top:3px solid #CC0000;border-left:3px solid #CC0000;z-index:4;}
+.spl-p5-menu{position:absolute;top:40%;left:16px;right:36px;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:4px;}
+.spl-p5-tag{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:4px;color:#CC0000;margin-bottom:10px;}
+.spl-p5-it{display:flex;align-items:center;transform:skewY(-1.5deg);}
+.spl-p5-n{background:#CC0000;clip-path:polygon(0 0,100% 0,80% 100%,0 100%);padding:7px 10px;width:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.spl-p5-nt{font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;}
+.spl-p5-it.on .spl-p5-n{background:#fff;}.spl-p5-it.on .spl-p5-nt{color:#CC0000;}
+.spl-p5-lb{background:rgba(200,0,0,.12);border:1px solid rgba(200,0,0,.35);border-left:none;clip-path:polygon(0 0,100% 0,88% 100%,0 100%);padding:6px 18px 6px 8px;flex:1;overflow:hidden;}
+.spl-p5-lt{font-size:15px;letter-spacing:3px;color:#F0DEB8;white-space:nowrap;text-shadow:1px 1px 0 #000;}
+.spl-p5-it.on .spl-p5-lt{color:#fff;}
+.spl-p5-ar{color:#CC0000;font-size:11px;margin-left:4px;flex-shrink:0;}
+.spl-p5-ft{position:absolute;bottom:54px;left:16px;z-index:5;}
+.spl-p5-ftg{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:4px;color:rgba(204,0,0,.6);margin-bottom:2px;}
+.spl-p5-fb{font-size:44px;letter-spacing:1px;color:#CC0000;line-height:1;text-shadow:3px 3px 0 #000,-1px -1px 0 #000;}
+.spl-p5-fb span{color:#F0DEB8;}
+.spl-p5-en{position:absolute;bottom:10px;left:16px;right:36px;z-index:6;}
+.spl-p5-eb{display:flex;align-items:center;}
+.spl-p5-em{background:#CC0000;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);padding:9px 24px;font-size:16px;letter-spacing:6px;color:#fff;text-shadow:1px 1px 0 #000;flex:1;}
+.spl-p5-ea{background:rgba(200,0,0,.2);border:1px solid rgba(200,0,0,.4);padding:9px 10px;font-size:14px;color:#CC0000;}
+/* P4G */
+.spl-p4-ns{position:absolute;inset:0;background:repeating-conic-gradient(rgba(0,0,0,.04) 0deg,transparent 1deg,transparent 5deg,rgba(0,0,0,.02) 6deg) center/50px 50px;}
+.spl-p4-sp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none;}
+.spl-p4-s1{width:200px;height:200px;border-radius:50%;border:3px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;}
+.spl-p4-s2{width:150px;height:150px;border-radius:50%;border:2.5px solid rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;}
+.spl-p4-s3{width:100px;height:100px;border-radius:50%;border:2px solid rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;}
+.spl-p4-s4{width:50px;height:50px;border-radius:50%;border:1.5px solid rgba(0,0,0,.04);}
+.spl-p4-tb{position:absolute;top:0;left:0;right:0;height:48px;background:#000;display:flex;align-items:center;padding:0 14px;gap:8px;z-index:4;overflow:hidden;}
+.spl-p4-tg{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:4px;color:#F0C000;white-space:nowrap;}
+.spl-p4-tl{flex:1;height:1px;background:rgba(240,192,0,.3);}
+.spl-p4-mn{position:absolute;top:42%;left:10px;right:36px;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:4px;}
+.spl-p4-it{display:flex;align-items:stretch;}
+.spl-p4-tr{width:0;height:0;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:14px solid #000;flex-shrink:0;align-self:center;}
+.spl-p4-it.on .spl-p4-tr{border-left-color:#CC0000;}
+.spl-p4-bx{background:#000;padding:9px 12px;flex:1;display:flex;align-items:center;justify-content:space-between;border-left:3px solid #F0C000;min-width:0;overflow:hidden;}
+.spl-p4-it.on .spl-p4-bx{border-left-color:#CC0000;}
+.spl-p4-bt{font-size:14px;letter-spacing:3px;color:#F0C000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.spl-p4-it.on .spl-p4-bt{color:#FF2020;}
+.spl-p4-ba{font-size:9px;color:rgba(240,192,0,.4);flex-shrink:0;margin-left:4px;}
+.spl-p4-ft{position:absolute;bottom:54px;left:10px;z-index:5;}
+.spl-p4-fb{font-size:30px;letter-spacing:1px;color:#F0C000;line-height:1;}
+.spl-p4-fs{font-family:'Share Tech Mono',monospace;font-size:6px;letter-spacing:3px;color:rgba(240,192,0,.4);margin-top:2px;line-height:1.7;}
+.spl-p4-en{position:absolute;bottom:10px;left:10px;right:36px;z-index:6;}
+.spl-p4-eb{background:#000;border:2px solid #F0C000;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;}
+.spl-p4-et{font-size:16px;letter-spacing:6px;color:#F0C000;}
+.spl-p4-ea{font-size:14px;color:#F0C000;}
+/* P3R */
+.spl-p3-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0088DD 0%,#0066CC 30%,#0044AA 60%,#003388 100%);}
+.spl-p3-bubbles{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.spl-p3-bub{position:absolute;border-radius:50%;background:rgba(255,255,255,.06);}
+.spl-p3-bub:nth-child(1){width:80px;height:80px;top:10%;left:15%;}
+.spl-p3-bub:nth-child(2){width:50px;height:50px;top:25%;right:20%;}
+.spl-p3-bub:nth-child(3){width:120px;height:120px;bottom:20%;left:5%;}
+.spl-p3-bub:nth-child(4){width:35px;height:35px;top:60%;right:10%;}
+.spl-p3-water{position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,rgba(150,220,255,.15),transparent);}
+.spl-p3-tag{position:absolute;top:14px;left:12px;font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:4px;color:rgba(255,255,255,.45);z-index:5;}
+.spl-p3-cascade{position:absolute;top:50%;left:14px;right:10px;transform:translateY(-52%);z-index:5;display:flex;flex-direction:column;gap:0;}
+.spl-p3-sel{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:900;font-size:52px;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:2px;text-shadow:2px 2px 0 rgba(0,0,0,.3);}
+.spl-p3-rl{display:block;width:60%;height:3px;background:#CC0000;margin-top:2px;margin-bottom:6px;}
+.spl-p3-item{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:700;letter-spacing:2px;color:rgba(150,220,255,.65);line-height:1.15;}
+.spl-p3-item.sz1{font-size:30px;}
+.spl-p3-item.sz2{font-size:26px;color:rgba(120,200,255,.5);}
+.spl-p3-item.sz3{font-size:22px;color:rgba(100,180,255,.35);}
+.spl-p3-en{position:absolute;bottom:12px;left:12px;right:12px;z-index:6;}
+.spl-p3-eb{background:rgba(0,30,100,.5);border:1.5px solid rgba(255,255,255,.3);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;}
+.spl-p3-et{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:700;font-size:16px;letter-spacing:6px;color:#fff;}
+.spl-p3-ea{font-size:14px;color:rgba(150,220,255,.8);}
+.spl-p3-btm{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.2);z-index:6;}
+
+/* ── DA SWITCHING ── */
+body.da-p3 #topbar{background:linear-gradient(90deg,#0044AA,#0066CC);}
+body.da-p3 #topbar-logo{color:#fff;text-shadow:none;}
+body.da-p3 .s-num{color:#4488FF;}
+body.da-p3 .s-label{color:rgba(100,180,255,.6);}
+body.da-p3 .s-title{color:#fff;}
+body.da-p3 #hero{background:linear-gradient(160deg,#003388 0%,#0055AA 50%,#0033AA 100%);}
+body.da-p3 .hero-tag{color:rgba(150,220,255,.6);}
+body.da-p3 .hero-role{color:rgba(200,230,255,.8);}
+body.da-p3 #mode-badge.desktop{background:#0044AA;color:#fff;}
+body.da-p3 .skill-card{border-top-color:#4488FF;}
+body.da-p3 .sk-name{color:#7AABEE;}
+body.da-p3 .proj-card{border-left-color:#4488FF;}
+body.da-p3 .proj-n{color:#4488FF;}
+body.da-p3 .proj-type{color:rgba(100,180,255,.6);}
+body.da-p3 .ptag{border-color:rgba(68,136,255,.4);color:#4488FF;}
+body.da-p3 .tarif-btn{background:#0044AA;border-color:#4488FF;color:#fff;}
+body.da-p3 .tarif-price{color:#4488FF;}
+body.da-p3 .form-submit{background:#0044AA;border-color:#4488FF;}
+body.da-p3 section{background:#000D1F;}
+body.da-p3 body{background:#000D1F;}
+
+body.da-p4 #topbar{background:linear-gradient(90deg,#1A1200,#2A1E00);}
+body.da-p4 #topbar-logo{color:#F0C000;}
+body.da-p4 .s-num{color:#D4AA00;}
+body.da-p4 .s-label{color:rgba(212,170,0,.6);}
+body.da-p4 #hero{background:linear-gradient(160deg,#1A1200 0%,#2A1E00 50%,#1A1200 100%);}
+body.da-p4 .hero-tag{color:rgba(212,170,0,.6);}
+body.da-p4 .skill-card{border-top-color:#D4AA00;}
+body.da-p4 .sk-name{color:#F0C000;}
+body.da-p4 .proj-card{border-left-color:#D4AA00;}
+body.da-p4 .proj-n{color:#D4AA00;}
+body.da-p4 .proj-type{color:rgba(212,170,0,.6);}
+body.da-p4 .ptag{border-color:rgba(212,170,0,.4);color:#D4AA00;}
+body.da-p4 .tarif-btn{background:#1A1200;border-color:#D4AA00;color:#F0C000;}
+body.da-p4 section{background:#0E0900;}
+@keyframes blink{50%{opacity:.15}}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="slash-overlay"><div class="slash-panel"></div><div class="slash-panel"></div><div class="slash-panel"></div><div class="slash-panel"></div><div class="slash-panel"></div></div>
+
+<div id="loading">
+  <div class="load-name">RYF<b>TAN</b></div>
+  <div class="load-sub">// CHARGEMENT EN COURS</div>
+  <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
+  <div class="load-pct" id="load-pct">0%</div>
+</div>
+
+<div id="splash">
+  <div class="spl-root">
+    <!-- P5R — YOUTUBE -->
+    <div class="spl-p5" id="spl-youtube" data-sec="youtube">
+      <div class="spl-p5-hatch"></div>
+      <div class="spl-p5-b1"></div><div class="spl-p5-b2"></div>
+      <div class="spl-p5-brk"></div>
+      <div class="spl-p5-menu">
+        <div class="spl-p5-tag">// 01 · YOUTUBE</div>
+        <div class="spl-p5-it on"><div class="spl-p5-n"><span class="spl-p5-nt">01</span></div><div class="spl-p5-lb"><span class="spl-p5-lt">SHORTS</span></div><span class="spl-p5-ar">◀</span></div>
+        <div class="spl-p5-it"><div class="spl-p5-n"><span class="spl-p5-nt">02</span></div><div class="spl-p5-lb"><span class="spl-p5-lt">VIDÉOS LONGUES</span></div></div>
+        <div class="spl-p5-it"><div class="spl-p5-n"><span class="spl-p5-nt">03</span></div><div class="spl-p5-lb"><span class="spl-p5-lt">MES VIDÉOS</span></div></div>
+      </div>
+      <div class="spl-p5-ft"><div class="spl-p5-ftg">// RÉDACTION</div><div class="spl-p5-fb">YOU<span>TUBE</span></div></div>
+      <div class="spl-p5-en"><div class="spl-p5-eb"><span class="spl-p5-em">ENTRER</span><span class="spl-p5-ea">▶</span></div></div>
+      <div class="spl-lame spl-lm1"><div class="spl-la"></div><div class="spl-lb"></div></div>
+    </div>
+    <!-- P4G — COPYWRITING -->
+    <div class="spl-p4" id="spl-copywriting" data-sec="copywriting">
+      <div class="spl-p4-ns"></div>
+      <div class="spl-p4-sp"><div class="spl-p4-s1"><div class="spl-p4-s2"><div class="spl-p4-s3"><div class="spl-p4-s4"></div></div></div></div></div>
+      <div class="spl-p4-tb"><span class="spl-p4-tg">// 02 · COPYWRITING</span><div class="spl-p4-tl"></div></div>
+      <div class="spl-p4-mn">
+        <div class="spl-p4-it on"><div class="spl-p4-tr"></div><div class="spl-p4-bx"><span class="spl-p4-bt">MAILS DE VENTE</span><span class="spl-p4-ba">▶</span></div></div>
+        <div class="spl-p4-it"><div class="spl-p4-tr"></div><div class="spl-p4-bx"><span class="spl-p4-bt">TEXTES COMMERCIAUX</span><span class="spl-p4-ba">▶</span></div></div>
+        <div class="spl-p4-it"><div class="spl-p4-tr"></div><div class="spl-p4-bx"><span class="spl-p4-bt">À DÉFINIR</span><span class="spl-p4-ba">▶</span></div></div>
+      </div>
+      <div class="spl-p4-ft"><div class="spl-p4-fb">COPYWRITING</div><div class="spl-p4-fs">MAILS · TEXTES<br>VENTE · COMMERCIAL</div></div>
+      <div class="spl-p4-en"><div class="spl-p4-eb"><span class="spl-p4-et">ENTRER</span><span class="spl-p4-ea">▶</span></div></div>
+      <div class="spl-lame spl-lm2"><div class="spl-la"></div><div class="spl-lb"></div></div>
+    </div>
+    <!-- P3R — NARRATIVE DESIGN -->
+    <div class="spl-p3" id="spl-narrative" data-sec="narrative">
+      <div class="spl-p3-bg"></div>
+      <div class="spl-p3-bubbles"><div class="spl-p3-bub"></div><div class="spl-p3-bub"></div><div class="spl-p3-bub"></div><div class="spl-p3-bub"></div></div>
+      <div class="spl-p3-water"></div>
+      <div class="spl-p3-tag">// 03 · NARRATIVE DESIGN</div>
+      <div class="spl-p3-cascade">
+        <div class="spl-p3-sel">NARRATIVE<span class="spl-p3-rl"></span></div>
+        <div class="spl-p3-item sz1">DESIGN</div>
+        <div class="spl-p3-item sz2">WORLD-BUILDING</div>
+        <div class="spl-p3-item sz3">PIPELINE PRODUCTION</div>
+      </div>
+      <div class="spl-p3-en"><div class="spl-p3-eb"><span class="spl-p3-et">ACCÉDER</span><span class="spl-p3-ea">▶</span></div></div>
+      <div class="spl-p3-btm"></div>
+    </div>
+  </div>
+</div>
+
+<div id="topbar">
+  <button id="burger"><span></span><span></span><span></span></button>
+  <div id="topbar-logo">RYFTAN</div>
+  <div id="lang-switcher"><button class="lang-btn active" data-lang="fr">FR</button><button class="lang-btn" data-lang="en">EN</button></div>
+  <div id="topbar-status">[ EN LIGNE ]</div>
+</div>
+<div id="mode-badge"></div>
+
+<div id="p5-overlay">
+  <div id="p5-bg"></div>
+  <div id="p5-red"></div>
+  <div id="p5-lines"><div class="p5-line-seg"></div><div class="p5-line-seg"></div><div class="p5-line-seg"></div><div class="p5-line-seg"></div><div class="p5-line-seg"></div><div class="p5-line-seg"></div><div class="p5-line-seg"></div><div class="p5-line-seg"></div></div>
+  <nav id="p5-panels">
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#FFD700;color:#000;">HOME</span><a class="p5-panel" href="#hero"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="home">ACCUEIL</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="100%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="60%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#ffffff;color:#000;">INFO</span><a class="p5-panel" href="#about"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="about">À PROPOS</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="80%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="80%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#00CFFF;color:#000;">SKILL</span><a class="p5-panel" href="#skills"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="skills">SKILLS</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="100%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="100%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#7CFF6B;color:#000;">WORK</span><a class="p5-panel" href="#projects"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="projects">ÉCRITURE</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="90%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="85%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#FF4DAA;color:#000;">GOLD</span><a class="p5-panel" href="#tarifs"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="tarifs">TARIFS</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="88%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="70%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#FF7A00;color:#000;">MSG</span><a class="p5-panel" href="#contact"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="contact">CONTACT</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="75%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="55%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+    <div class="p5-panel-wrap"><span class="panel-badge" style="background:#DAA520;color:#000;">★</span><a class="p5-panel" href="#testimonial"><div class="panel-portrait"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="panel-info"><span class="panel-label" data-menu="testimonial">AVIS</span><div class="panel-stats"><div class="bar-wrap"><span class="bar-label hp">HP</span><div class="bar"><div class="bar-fill hp" data-val="100%"></div></div></div><div class="bar-wrap"><span class="bar-label sp">SP</span><div class="bar"><div class="bar-fill sp" data-val="100%"></div></div></div></div></div><span class="panel-arrow">▶</span></a></div>
+  </nav>
+  <div id="p5-info">
+    <div id="p5-name">RYF<b>TAN</b></div>
+    <div id="p5-role">Rédacteur YouTube<br>Narrative Designer</div>
+    <div class="p5-deco"><div class="p5-deco-line"></div><div class="p5-deco-line"></div><div class="p5-deco-line"></div></div>
+    <div id="p5-hint">— CHOISIR UNE RUBRIQUE —</div>
+  </div>
+  <div id="p5-close">[ FERMER ]</div>
+</div>
+
+<div id="portfolio-youtube" class="portfolio-wrap" style="display:none;">
+<section id="hero">
+  <div class="hero-grid"></div><div class="scanline"></div><div class="hero-slash"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">PORTFOLIO — RÉDACTION YOUTUBE 2026</div>
+    <h1 class="hero-name" id="hero-name-el"></h1>
+    <p class="hero-sub">Rédacteur YouTube & Scriptwriter</p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn btn-w"><span>Voir mes projets</span></a>
+      <a href="#contact" class="btn btn-o">Me contacter</a>
+    </div>
+  </div>
+  <div class="hero-cards">
+    <div class="hcard"><div class="lbl">// STATUT</div><span>DISPONIBLE POUR MISSIONS</span></div>
+    <div class="hcard"><div class="lbl">// SPÉCIALITÉ</div>SCRIPTS & STORYTELLING</div>
+    <div class="hcard"><div class="lbl">// FORMAT</div>SHORTS · VIDÉOS LONGUES</div>
+  </div>
+</section>
+<section id="about">
+  <div class="s-head reveal"><div class="s-num">01</div><div><div class="s-label">// À PROPOS</div><h2 class="s-title">QUI SUIS-JE ?</h2></div></div>
+  <div class="about-grid">
+    <div class="reveal-left">
+      <div class="avatar-wrap"><img class="avatar" src="avatar.webp" alt="Ryftan"></div>
+      <div class="about-text">
+        <p>Je suis <strong>Ryftan</strong>, rédacteur YouTube passionné par l'art de raconter des histoires qui <strong>captivent</strong> et retiennent l'attention jusqu'à la dernière seconde.</p>
+        <p>Mon travail, c'est transformer des idées brutes en <strong>scripts percutants</strong> qui donnent envie de rester jusqu'à la fin.</p>
+        <p>Chaque mot est pensé pour maximiser la <strong>rétention, l'engagement et l'impact</strong> sur l'audience.</p>
+      </div>
+    </div>
+    <div class="stats reveal-right">
+      <div class="stat"><div class="stat-n" id="yt-stat-scripts">0</div><div class="stat-l">Scripts rédigés</div></div>
+      <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Engagement dans chaque projet</div></div>
+      <div class="stat"><div class="stat-n">01</div><div class="stat-l">Objectif : vous captiver</div></div>
+    </div>
+  </div>
+</section>
+<section id="skills">
+  <div class="s-head reveal"><div class="s-num">02</div><div><div class="s-label">// COMPÉTENCES</div><h2 class="s-title">SKILLS</h2></div></div>
+  <div class="skills-grid" id="yt-skills-grid">
+    <div class="skill-card reveal"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="#CC0000"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.04 0 12 0 12s0 3.96.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.96 24 12 24 12s0-3.96-.5-5.81zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg></div><div class="sk-name">Rédaction YouTube</div><p class="sk-desc">Scripts optimisés pour l'engagement, la rétention et la narration. Chaque ligne pensée pour garder l'audience accrochée.</p><span class="sk-tag">// SCRIPTS</span></div>
+    <div class="skill-card reveal" style="transition-delay:.1s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#CC0000" stroke-width="1.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div><div class="sk-name">Scriptwriting</div><p class="sk-desc">Structure narrative, accroche, développement et conclusion. Chaque script est une histoire complète et percutante.</p><span class="sk-tag">// STORYTELLING</span></div>
+    <div class="skill-card reveal" style="transition-delay:.2s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#CC0000" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="sk-name">Optimisation Rétention</div><p class="sk-desc">Techniques de rétention, patterns d'accroche et structure de contenu pour maximiser le watch time.</p><span class="sk-tag">// RETENTION</span></div>
+  </div>
+</section>
+<section id="projects">
+  <div class="s-head reveal"><div class="s-num">03</div><div><div class="s-label">// MON TRAVAIL</div><h2 class="s-title">PROJETS</h2></div></div>
+  <div class="writing-tabs">
+    <button class="wtab active" data-tab="yt-shorts">SHORTS</button>
+    <button class="wtab" data-tab="yt-longues">VIDÉOS LONGUES</button>
+    <button class="wtab" data-tab="yt-videos">MES VIDÉOS</button>
+  </div>
+  <div class="writing-content">
+    <div class="writing-panel active" id="tab-yt-shorts"><div class="proj-grid" id="yt-shorts-grid">
+      <div class="proj-card"><div class="proj-n">01</div><div class="proj-type">// SHORT / REEL</div><h3 class="proj-title">PROJET À DÉFINIR</h3><p class="proj-desc">Ajoute tes shorts via l'admin.</p><div class="proj-tags"><span class="ptag">SHORT</span><span class="ptag">SCRIPT</span></div></div>
+    </div></div>
+    <div class="writing-panel" id="tab-yt-longues"><div class="proj-grid" id="yt-longues-grid">
+      <div class="proj-card"><div class="proj-n">01</div><div class="proj-type">// YOUTUBE</div><h3 class="proj-title">PROJET À DÉFINIR</h3><p class="proj-desc">Ajoute tes vidéos longues via l'admin.</p><div class="proj-tags"><span class="ptag">YOUTUBE</span><span class="ptag">SCRIPT</span></div></div>
+    </div></div>
+    <div class="writing-panel" id="tab-yt-videos">
+      <div class="video-grid" id="yt-video-grid">
+        <div class="video-card"><div class="no-vid"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Ajoute tes vidéos via ⚙ ADMIN</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="tarifs">
+  <div class="s-head reveal"><div class="s-num">04</div><div><div class="s-label">// INVESTISSEMENT</div><h2 class="s-title">TARIFS</h2></div></div>
+  <div class="tarifs-grid" id="yt-tarifs-grid">
+    <div class="tarif-card reveal"><div class="tarif-badge">FORMAT COURT</div><div class="tarif-name">SHORTS / REELS</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Script complet</li><li>▶ Accroche optimisée</li><li>▶ Rétention maximale</li></ul><a href="#contact" class="tarif-btn" data-type="SHORT">DÉMARRER →</a></div>
+    <div class="tarif-card featured reveal" style="transition-delay:.1s"><div class="tarif-badge">FORMAT LONG</div><div class="tarif-name">VIDÉO YOUTUBE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Script narré complet</li><li>▶ Structure storytelling</li><li>▶ Révisions incluses</li><li>▶ Direction créative</li></ul><a href="#contact" class="tarif-btn" data-type="VIDÉO LONGUE">DÉMARRER →</a></div>
+    <div class="tarif-card reveal" style="transition-delay:.2s"><div class="tarif-badge">PACK COMPLET</div><div class="tarif-name">STRATÉGIE CANAL</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Audit de contenu</li><li>▶ Direction éditoriale</li><li>▶ Scripts mensuels</li></ul><a href="#contact" class="tarif-btn" data-type="PACK">DÉMARRER →</a></div>
+  </div>
+</section>
+</div>
+
+<!-- ══ PORTFOLIO COPYWRITING P4G ══ -->
+<div id="portfolio-copywriting" class="portfolio-wrap" style="display:none;">
+<section id="hero">
+  <div class="hero-grid"></div><div class="scanline"></div><div class="hero-slash"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">PORTFOLIO — COPYWRITING 2026</div>
+    <h1 class="hero-name" id="hero-name-el-copy"></h1>
+    <p class="hero-sub">Copywriter & Rédacteur Commercial</p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn btn-w"><span>Voir mes projets</span></a>
+      <a href="#contact" class="btn btn-o">Me contacter</a>
+    </div>
+  </div>
+  <div class="hero-cards">
+    <div class="hcard"><div class="lbl">// STATUT</div><span>DISPONIBLE POUR MISSIONS</span></div>
+    <div class="hcard"><div class="lbl">// SPÉCIALITÉ</div>MAILS DE VENTE & COPY</div>
+    <div class="hcard"><div class="lbl">// OBJECTIF</div>CONVERTIR · PERSUADER</div>
+  </div>
+</section>
+<section id="about">
+  <div class="s-head reveal"><div class="s-num">01</div><div><div class="s-label">// À PROPOS</div><h2 class="s-title">QUI SUIS-JE ?</h2></div></div>
+  <div class="about-grid">
+    <div class="reveal-left">
+      <div class="avatar-wrap"><img class="avatar" src="avatar.webp" alt="Ryftan"></div>
+      <div class="about-text">
+        <p>Je suis <strong>Ryftan</strong>, copywriter spécialisé dans la rédaction de textes qui <strong>convertissent</strong> et persuadent.</p>
+        <p>Mails de vente, textes commerciaux, pages de vente — chaque mot est choisi pour <strong>déclencher l'action</strong> chez le lecteur.</p>
+        <p>À définir selon tes services et ton positionnement.</p>
+      </div>
+    </div>
+    <div class="stats reveal-right">
+      <div class="stat"><div class="stat-n" id="cp-stat-projects">0</div><div class="stat-l">Projets réalisés</div></div>
+      <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Orienté résultats</div></div>
+      <div class="stat"><div class="stat-n">01</div><div class="stat-l">Objectif : convertir</div></div>
+    </div>
+  </div>
+</section>
+<section id="skills">
+  <div class="s-head reveal"><div class="s-num">02</div><div><div class="s-label">// COMPÉTENCES</div><h2 class="s-title">SKILLS</h2></div></div>
+  <div class="skills-grid" id="cp-skills-grid">
+    <div class="skill-card reveal"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#D4AA00" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="sk-name">Mails de Vente</div><p class="sk-desc">Séquences email qui convertissent. Accroche, valeur, call-to-action. Chaque mail pensé pour générer des réponses.</p><span class="sk-tag">// EMAIL</span></div>
+    <div class="skill-card reveal" style="transition-delay:.1s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#D4AA00" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="sk-name">Textes Commerciaux</div><p class="sk-desc">Pages de vente, landing pages, fiches produits. Des textes qui parlent directement aux besoins du client.</p><span class="sk-tag">// COMMERCIAL</span></div>
+    <div class="skill-card reveal" style="transition-delay:.2s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#D4AA00" stroke-width="1.5"><path d="M12 2a7 7 0 0 1 7 7c0 2.6-1.4 4.9-3.5 6.2V17a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-1.8C6.4 13.9 5 11.6 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div class="sk-name">Stratégie Copy</div><p class="sk-desc">À définir — tes services spécifiques de copywriting stratégique.</p><span class="sk-tag">// STRATÉGIE</span></div>
+  </div>
+</section>
+<section id="projects">
+  <div class="s-head reveal"><div class="s-num">03</div><div><div class="s-label">// MON TRAVAIL</div><h2 class="s-title">PROJETS</h2></div></div>
+  <div class="proj-grid" id="cp-proj-grid">
+    <div class="proj-card"><div class="proj-n">01</div><div class="proj-type">// COPYWRITING</div><h3 class="proj-title">PROJET À DÉFINIR</h3><p class="proj-desc">Ajoute tes projets via l'admin.</p><div class="proj-tags"><span class="ptag">COPY</span><span class="ptag">VENTE</span></div></div>
+    <div class="proj-card"><div class="proj-n">02</div><div class="proj-type">// COPYWRITING</div><h3 class="proj-title">PROJET À DÉFINIR</h3><p class="proj-desc">Ajoute tes projets via l'admin.</p><div class="proj-tags"><span class="ptag">EMAIL</span><span class="ptag">COMMERCIAL</span></div></div>
+  </div>
+</section>
+<section id="tarifs">
+  <div class="s-head reveal"><div class="s-num">04</div><div><div class="s-label">// INVESTISSEMENT</div><h2 class="s-title">TARIFS</h2></div></div>
+  <div class="tarifs-grid" id="cp-tarifs-grid">
+    <div class="tarif-card reveal"><div class="tarif-badge">MAIL DE VENTE</div><div class="tarif-name">EMAIL UNIQUE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Email complet</li><li>▶ Objet optimisé</li><li>▶ Call-to-action</li></ul><a href="#contact" class="tarif-btn" data-type="EMAIL">DÉMARRER →</a></div>
+    <div class="tarif-card featured reveal" style="transition-delay:.1s"><div class="tarif-badge">SÉQUENCE</div><div class="tarif-name">PACK EMAILS</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Séquence complète</li><li>▶ Stratégie de nurturing</li><li>▶ Optimisation A/B</li><li>▶ Révisions incluses</li></ul><a href="#contact" class="tarif-btn" data-type="PACK EMAIL">DÉMARRER →</a></div>
+    <div class="tarif-card reveal" style="transition-delay:.2s"><div class="tarif-badge">PAGE DE VENTE</div><div class="tarif-name">LANDING PAGE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Page complète</li><li>▶ Structure AIDA</li><li>▶ Copy persuasif</li></ul><a href="#contact" class="tarif-btn" data-type="LANDING">DÉMARRER →</a></div>
+  </div>
+</section>
+</div>
+
+<!-- ══ PORTFOLIO NARRATIVE DESIGN P3R ══ -->
+<div id="portfolio-narrative" class="portfolio-wrap" style="display:none;">
+<section id="hero">
+  <div class="hero-grid"></div><div class="scanline"></div><div class="hero-slash"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">PORTFOLIO — NARRATIVE DESIGN 2026</div>
+    <h1 class="hero-name" id="hero-name-el-nd"></h1>
+    <p class="hero-sub">Narrative Designer & World-Builder</p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn btn-w"><span>Voir mes projets</span></a>
+      <a href="#contact" class="btn btn-o">Me contacter</a>
+    </div>
+  </div>
+  <div class="hero-cards">
+    <div class="hcard"><div class="lbl">// STATUT</div><span>DISPONIBLE POUR MISSIONS</span></div>
+    <div class="hcard"><div class="lbl">// SPÉCIALITÉ</div>LORE & WORLD-BUILDING</div>
+    <div class="hcard"><div class="lbl">// UNIVERS</div>JEUX VIDÉO · FICTION</div>
+  </div>
+</section>
+<section id="about">
+  <div class="s-head reveal"><div class="s-num">01</div><div><div class="s-label">// À PROPOS</div><h2 class="s-title">QUI SUIS-JE ?</h2></div></div>
+  <div class="about-grid">
+    <div class="reveal-left">
+      <div class="avatar-wrap"><img class="avatar" src="avatar.webp" alt="Ryftan"></div>
+      <div class="about-text">
+        <p>Je suis <strong>Ryftan</strong>, Narrative Designer spécialisé dans la création de <strong>mondes narratifs cohérents</strong> et émotionnellement résonnants.</p>
+        <p>Architecture narrative, pipeline de production, environmental storytelling — je construis les fondations qui donnent vie à un univers.</p>
+        <p>Chaque décision narrative est tracée jusqu'à une <strong>intention émotionnelle précise</strong>.</p>
+      </div>
+    </div>
+    <div class="stats reveal-right">
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">Documents livrés</div></div>
+      <div class="stat"><div class="stat-n">1</div><div class="stat-l">Projet actif</div></div>
+      <div class="stat"><div class="stat-n">∞</div><div class="stat-l">Univers à construire</div></div>
+    </div>
+  </div>
+</section>
+<section id="skills">
+  <div class="s-head reveal"><div class="s-num">02</div><div><div class="s-label">// COMPÉTENCES</div><h2 class="s-title">SKILLS</h2></div></div>
+  <div class="skills-grid" id="nd-skills-grid">
+    <div class="skill-card reveal"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#4488FF" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><div class="sk-name">Architecture Narrative</div><p class="sk-desc">Construction de systèmes narratifs complets — piliers, thèmes, pipeline de production sur 14 phases.</p><span class="sk-tag">// ARCHITECTURE</span></div>
+    <div class="skill-card reveal" style="transition-delay:.1s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#4488FF" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="sk-name">World-Building</div><p class="sk-desc">Création de mondes cohérents — histoire, factions, cultures, géographie et systèmes de mémoire.</p><span class="sk-tag">// LORE</span></div>
+    <div class="skill-card reveal" style="transition-delay:.2s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#4488FF" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="sk-name">Environmental Storytelling</div><p class="sk-desc">Documentation atmosphérique par biome, identité émotionnelle de chaque espace, intégration cross-département.</p><span class="sk-tag">// ENV. DESIGN</span></div>
+  </div>
+</section>
+<section id="projects">
+  <div class="s-head reveal"><div class="s-num">03</div><div><div class="s-label">// MON TRAVAIL</div><h2 class="s-title">PROJETS</h2></div></div>
+  <div class="nd-proj-grid" id="nd-proj-grid">
+    <div class="nd-card">
+      <div class="nd-card-head"><div class="nd-num">01</div><div><span class="nd-type">// NARRATIVE DESIGN · ACTION-RPG ROGUELITE</span><h3 class="nd-title">TIDES OF ETERNITY</h3></div></div>
+      <p class="nd-desc">Conception narrative complète pour un action-RPG roguelite en développement actif, inspiré de la mythologie grecque.</p>
+      <div class="nd-links-block"><div class="nd-links-label">// DOCUMENTS LIVRÉS</div>
+        <div class="nd-links-list">
+          <div class="nd-link-row"><span class="nd-link-name">Integral Narrative Architecture</span><a class="nd-link-btn" href="#contact">DEMANDER →</a></div>
+          <div class="nd-link-row"><span class="nd-link-name">Narrative Design Pipeline (14 phases)</span><a class="nd-link-btn" href="#contact">DEMANDER →</a></div>
+          <div class="nd-link-row"><span class="nd-link-name">Narrative Production Framework</span><a class="nd-link-btn" href="#contact">DEMANDER →</a></div>
+          <div class="nd-link-row"><span class="nd-link-name">Environmental & Atmospheric Documentation</span><a class="nd-link-btn" href="#contact">DEMANDER →</a></div>
+        </div>
+      </div>
+      <div class="proj-tags"><span class="ptag">NARRATIVE DESIGN</span><span class="ptag">WORLD-BUILDING</span><span class="ptag">PIPELINE</span><span class="ptag">ENV. STORYTELLING</span></div>
+    </div>
+  </div>
+</section>
+<section id="tarifs">
+  <div class="s-head reveal"><div class="s-num">04</div><div><div class="s-label">// INVESTISSEMENT</div><h2 class="s-title">TARIFS</h2></div></div>
+  <div class="tarifs-grid" id="nd-tarifs-grid">
+    <div class="tarif-card reveal"><div class="tarif-badge">DOCUMENT</div><div class="tarif-name">ARCHITECTURE NARRATIVE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Piliers narratifs</li><li>▶ Thèmes & tone bible</li><li>▶ Parcours émotionnel</li></ul><a href="#contact" class="tarif-btn" data-type="ARCHITECTURE">DÉMARRER →</a></div>
+    <div class="tarif-card featured reveal" style="transition-delay:.1s"><div class="tarif-badge">PACK COMPLET</div><div class="tarif-name">FRAMEWORK NARRATIF</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Architecture + Pipeline</li><li>▶ Fiches personnages</li><li>▶ Environmental storytelling</li><li>▶ Suivi 30 jours</li></ul><a href="#contact" class="tarif-btn" data-type="FRAMEWORK">DÉMARRER →</a></div>
+    <div class="tarif-card reveal" style="transition-delay:.2s"><div class="tarif-badge">CONSULTING</div><div class="tarif-name">MISSION SUR MESURE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Audit narratif</li><li>▶ Direction créative</li><li>▶ Documentation complète</li></ul><a href="#contact" class="tarif-btn" data-type="CONSULTING">DÉMARRER →</a></div>
+  </div>
+</section>
+</div>
+  <div class="s-head reveal"><div class="s-num">01</div><div><div class="s-label" data-fr="// À PROPOS" data-en="// ABOUT">// À PROPOS</div><h2 class="s-title" data-fr="QUI SUIS-JE ?" data-en="WHO AM I?">QUI SUIS-JE ?</h2></div></div>
+  <div class="about-grid">
+    <div class="reveal-left">
+      <div class="avatar-wrap"><img class="avatar" src="avatar.webp" alt="Ryftan"></div>
+      <div class="about-text">
+        <p data-fr="Je suis <strong>Ryftan</strong>, rédacteur YouTube et Narrative Designer passionné par l'art de raconter des histoires qui <strong>captivent</strong>, surprennent et marquent les esprits." data-en="I'm <strong>Ryftan</strong>, a YouTube writer and Narrative Designer passionate about crafting stories that <strong>captivate</strong>, surprise, and leave a lasting impression.">Je suis <strong>Ryftan</strong>, rédacteur YouTube et Narrative Designer passionné par l'art de raconter des histoires qui <strong>captivent</strong>, surprennent et marquent les esprits.</p>
+        <p data-fr="Mon travail, c'est transformer des idées brutes en <strong>scripts percutants</strong> qui donnent envie de rester jusqu'à la fin." data-en="My work is transforming raw ideas into <strong>punchy scripts</strong> that make you want to stay until the very end.">Mon travail, c'est transformer des idées brutes en <strong>scripts percutants</strong> qui donnent envie de rester jusqu'à la fin.</p>
+        <p data-fr="Que ce soit pour YouTube ou tout autre medium narratif, j'apporte une <strong>vision storytelling</strong> à chaque projet." data-en="Whether for YouTube or any other narrative medium, I bring a <strong>storytelling vision</strong> to every project.">Que ce soit pour YouTube ou tout autre medium narratif, j'apporte une <strong>vision storytelling</strong> à chaque projet.</p>
+      </div>
+    </div>
+    <div class="stats reveal-right">
+      <div class="stat"><div class="stat-n">∞</div><div class="stat-l" data-fr="Histoires à raconter" data-en="Stories to tell">Histoires à raconter</div></div>
+      <div class="stat"><div class="stat-n">100%</div><div class="stat-l" data-fr="Engagement dans chaque projet" data-en="Commitment to every project">Engagement dans chaque projet</div></div>
+      <div class="stat"><div class="stat-n">01</div><div class="stat-l" data-fr="Objectif : vous captiver" data-en="Goal: captivate you">Objectif : vous captiver</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="s-head reveal"><div class="s-num">02</div><div><div class="s-label" data-fr="// COMPÉTENCES" data-en="// SKILLS">// COMPÉTENCES</div><h2 class="s-title" data-fr="SKILLS" data-en="SKILLS">SKILLS</h2></div></div>
+  <div class="skills-grid">
+    <div class="skill-card reveal"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="#8B1A1A"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.04 0 12 0 12s0 3.96.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.96 24 12 24 12s0-3.96-.5-5.81zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg></div><div class="sk-name" data-fr="Rédaction YouTube" data-en="YouTube Writing">Rédaction YouTube</div><p class="sk-desc" data-fr="Scripts optimisés pour l'engagement, la rétention et la narration. Chaque ligne pensée pour garder l'audience accrochée." data-en="Scripts optimized for engagement, retention and storytelling. Every line crafted to keep the audience hooked.">Scripts optimisés pour l'engagement, la rétention et la narration. Chaque ligne pensée pour garder l'audience accrochée.</p><span class="sk-tag">// SCRIPTS</span></div>
+    <div class="skill-card reveal" style="transition-delay:.1s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#00CFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg></div><div class="sk-name" data-fr="Narrative Design" data-en="Narrative Design">Narrative Design</div><p class="sk-desc" data-fr="Lore, dialogues, arcs narratifs et world-building pour jeux vidéo, webtoons et univers fictionnels." data-en="Lore, dialogues, narrative arcs and world-building for video games, webtoons and fictional universes.">Lore, dialogues, arcs narratifs et world-building pour jeux vidéo et univers fictionnels.</p><span class="sk-tag">// STORYTELLING</span></div>
+    <div class="skill-card reveal" style="transition-delay:.2s"><div class="sk-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#FF4DAA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.6-1.4 4.9-3.5 6.2V17a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-1.8C6.4 13.9 5 11.6 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="17" x2="14" y2="17"/></svg></div><div class="sk-name" data-fr="Conseil Créatif" data-en="Creative Direction">Conseil Créatif</div><p class="sk-desc" data-fr="Brainstorming, direction narrative et relecture pour des contenus plus forts et mémorables." data-en="Brainstorming, narrative direction and proofreading for stronger, more memorable content.">Brainstorming, direction narrative et relecture pour des contenus plus forts et mémorables.</p><span class="sk-tag">// DIRECTION</span></div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="s-head reveal"><div class="s-num">03</div><div><div class="s-label" data-fr="// MON TRAVAIL" data-en="// MY WORK">// MON TRAVAIL</div><h2 class="s-title" data-fr="ÉCRITURE" data-en="WRITING">ÉCRITURE</h2></div></div>
+  <div id="msec-tabs" style="display:flex;width:100%;margin-bottom:0;">
+    <button class="msec-btn active" data-sec="youtube" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:5px;color:var(--wht);background:var(--red2);border:none;padding:20px 0;cursor:pointer;border-bottom:4px solid var(--red);transition:all .2s;">📺  YOUTUBE</button>
+    <button class="msec-btn" data-sec="narrative" style="flex:1;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:5px;color:rgba(245,240,232,.35);background:#0A1020;border:none;padding:20px 0;cursor:pointer;border-bottom:4px solid transparent;transition:all .2s;">📖  NARRATIVE DESIGN</button>
+  </div>
+  <div class="msec active" id="msec-youtube" style="background:var(--blk2);">
+    <div class="writing-tabs">
+      <button class="wtab active" data-tab="shorts">SHORTS</button>
+      <button class="wtab" data-tab="longues">VIDÉOS LONGUES</button>
+      <button class="wtab" data-tab="videos">MES VIDÉOS</button>
+    </div>
+    <div class="writing-content">
+      <div class="writing-panel active" id="tab-shorts"><div class="proj-grid" id="yt-shorts-static">
+        <div class="proj-card"><div class="proj-n">01</div><div class="proj-type">// SHORT / REEL</div><h3 class="proj-title">PROJET À DÉFINIR</h3><p class="proj-desc">Ajoute tes shorts via l'admin.</p><div class="proj-tags"><span class="ptag">SHORT</span></div></div>
+      </div></div>
+      <div class="writing-panel" id="tab-longues"><div class="proj-grid" id="yt-longues-static">
+        <div class="proj-card"><div class="proj-n">01</div><div class="proj-type">// YOUTUBE</div><h3 class="proj-title">PROJET À DÉFINIR</h3><p class="proj-desc">Ajoute tes vidéos longues via l'admin.</p><div class="proj-tags"><span class="ptag">YOUTUBE</span></div></div>
+      </div></div>
+      <div class="writing-panel" id="tab-videos">
+        <div class="video-grid" id="yt-video-grid-static">
+          <div class="video-card"><div class="no-vid"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Ajoute tes vidéos via ⚙ ADMIN</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="msec" id="msec-narrative" style="display:none;background:#080C18;">
+    <div style="padding:32px 5vw 48px;max-width:960px;margin:0 auto;">
+      <div class="nd-proj-grid" id="nd-proj-static">
+        <div class="nd-card">
+          <div class="nd-card-head"><div class="nd-num">01</div><div><span class="nd-type">// NARRATIVE DESIGN · ACTION-RPG ROGUELITE</span><h3 class="nd-title">TIDES OF ETERNITY</h3></div></div>
+          <p class="nd-desc">Conception narrative complète pour un action-RPG roguelite en développement actif.</p>
+          <div class="nd-links-block"><div class="nd-links-label">// DOCUMENTS</div><div class="nd-links-list">
+            <div class="nd-link-row"><span class="nd-link-name">Integral Narrative Architecture</span><a class="nd-link-btn" href="#contact">DEMANDER →</a></div>
+            <div class="nd-link-row"><span class="nd-link-name">Narrative Design Pipeline</span><a class="nd-link-btn" href="#contact">DEMANDER →</a></div>
+          </div></div>
+          <div class="proj-tags"><span class="ptag">NARRATIVE DESIGN</span><span class="ptag">WORLD-BUILDING</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tarifs">
+  <div class="s-head reveal"><div class="s-num">04</div><div><div class="s-label">// INVESTISSEMENT</div><h2 class="s-title">TARIFS</h2></div></div>
+  <!-- Tarifs YouTube (défaut) -->
+  <div class="tarifs-grid tarifs-youtube">
+    <div class="tarif-card reveal"><div class="tarif-badge">FORMAT COURT</div><div class="tarif-name">SHORTS / REELS</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Script complet</li><li>▶ Accroche optimisée</li><li>▶ Rétention maximale</li></ul><a href="#contact" class="tarif-btn" data-type="SHORT">DÉMARRER →</a></div>
+    <div class="tarif-card featured reveal" style="transition-delay:.1s"><div class="tarif-badge">FORMAT LONG</div><div class="tarif-name">VIDÉO YOUTUBE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Script narré complet</li><li>▶ Structure storytelling</li><li>▶ Révisions incluses</li><li>▶ Direction créative</li></ul><a href="#contact" class="tarif-btn" data-type="VIDÉO LONGUE">DÉMARRER →</a></div>
+    <div class="tarif-card reveal" style="transition-delay:.2s"><div class="tarif-badge">PACK COMPLET</div><div class="tarif-name">STRATÉGIE CANAL</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Audit de contenu</li><li>▶ Direction éditoriale</li><li>▶ Scripts mensuels</li></ul><a href="#contact" class="tarif-btn" data-type="PACK">DÉMARRER →</a></div>
+  </div>
+  <!-- Tarifs Copywriting -->
+  <div class="tarifs-grid tarifs-copywriting" style="display:none;">
+    <div class="tarif-card reveal"><div class="tarif-badge">MAIL DE VENTE</div><div class="tarif-name">EMAIL UNIQUE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Email complet</li><li>▶ Objet optimisé</li><li>▶ Call-to-action</li></ul><a href="#contact" class="tarif-btn" data-type="EMAIL">DÉMARRER →</a></div>
+    <div class="tarif-card featured reveal" style="transition-delay:.1s"><div class="tarif-badge">SÉQUENCE</div><div class="tarif-name">PACK EMAILS</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Séquence complète</li><li>▶ Stratégie nurturing</li><li>▶ Optimisation A/B</li><li>▶ Révisions incluses</li></ul><a href="#contact" class="tarif-btn" data-type="PACK EMAIL">DÉMARRER →</a></div>
+    <div class="tarif-card reveal" style="transition-delay:.2s"><div class="tarif-badge">PAGE DE VENTE</div><div class="tarif-name">LANDING PAGE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Page complète</li><li>▶ Structure AIDA</li><li>▶ Copy persuasif</li></ul><a href="#contact" class="tarif-btn" data-type="LANDING">DÉMARRER →</a></div>
+  </div>
+  <!-- Tarifs Narrative Design -->
+  <div class="tarifs-grid tarifs-narrative" style="display:none;">
+    <div class="tarif-card reveal"><div class="tarif-badge">DOCUMENT</div><div class="tarif-name">ARCHITECTURE NARRATIVE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Piliers narratifs</li><li>▶ Thèmes & tone bible</li><li>▶ Parcours émotionnel</li></ul><a href="#contact" class="tarif-btn" data-type="ARCHITECTURE">DÉMARRER →</a></div>
+    <div class="tarif-card featured reveal" style="transition-delay:.1s"><div class="tarif-badge">PACK COMPLET</div><div class="tarif-name">FRAMEWORK NARRATIF</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Architecture + Pipeline</li><li>▶ Fiches personnages</li><li>▶ Environmental storytelling</li><li>▶ Suivi 30 jours</li></ul><a href="#contact" class="tarif-btn" data-type="FRAMEWORK">DÉMARRER →</a></div>
+    <div class="tarif-card reveal" style="transition-delay:.2s"><div class="tarif-badge">CONSULTING</div><div class="tarif-name">MISSION SUR MESURE</div><span class="tarif-num">SUR DEVIS</span><div class="tarif-sep"></div><ul class="tarif-list"><li>▶ Audit narratif</li><li>▶ Direction créative</li><li>▶ Documentation complète</li></ul><a href="#contact" class="tarif-btn" data-type="CONSULTING">DÉMARRER →</a></div>
+  </div>
+</section>
+
+<section id="testimonial">
+  <div class="s-head reveal"><div class="s-num">05</div><div><div class="s-label">// RETOUR CLIENT</div><h2 class="s-title">TÉMOIGNAGE</h2></div></div>
+  <div class="testi-wrap reveal">
+    <div class="testi-card">
+      <div class="testi-quote">"</div>
+      <p class="testi-text">Working with Ryftan on Tides of Eternity has been a genuinely great experience so far. He brought a very strong system-level approach to narrative design and helped us structure the narrative side of the project in a much more cohesive and production-friendly way. The quality and depth of the documents he delivered were extremely impressive, especially regarding environmental storytelling, thematic consistency, and cross-department narrative integration. He was also very fast, organized, and reliable throughout the process, consistently delivering detailed work with clear structure and communication. I'm genuinely excited to see how his narrative design career grows moving forward.</p>
+      <div class="testi-author">
+        <div class="testi-line"></div>
+        <div class="testi-info">
+          <span class="testi-name">// TIDES OF ETERNITY</span>
+          <span class="testi-role">Directeur de projet · Narrative Design</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="s-head reveal"><div class="s-num">06</div><div><div class="s-label">// TRAVAILLONS ENSEMBLE</div><h2 class="s-title">CONTACT</h2></div></div>
+  <div class="contact-grid">
+    <div class="reveal-left">
+      <p class="ctxt">Un projet en tête ? Une collaboration ? Je suis là pour en parler.</p>
+      <div class="clinks">
+        <a href="https://mail.google.com/mail/?view=cm&to=Ryftan.psy@gmail.com" target="_blank" class="clink"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Ryftan.psy@gmail.com</a>
+        <a href="https://twitter.com/" class="clink" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>TWITTER / X</a>
+        <a href="https://discord.com/" class="clink" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.033.05a19.99 19.99 0 0 0 6.063 3.065.077.077 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.201 13.201 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.073-3.065.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>DISCORD</a>
+      </div>
+    </div>
+    <div class="contact-form-wrap reveal-right">
+      <div class="form-header"><span class="form-tag">// FORMULAIRE DE CONTACT</span></div>
+      <div class="p5-form">
+        <div class="form-field"><label class="form-label">CHAÎNE / PSEUDO</label><input class="form-input" id="f-name" type="text" placeholder="Votre chaîne ou pseudo..."></div>
+        <div class="form-field"><label class="form-label">CONTACT</label><input class="form-input" id="f-email" type="text" placeholder="Discord, mail..."></div>
+        <div class="form-field"><label class="form-label">TYPE DE PROJET</label>
+          <div class="form-choices">
+            <button class="form-choice" type="button">YOUTUBE</button>
+            <button class="form-choice" type="button">COPYWRITING</button>
+            <button class="form-choice" type="button">NARRATIVE</button>
+            <button class="form-choice" type="button">AUTRE</button>
+          </div>
+        </div>
+        <div class="form-field"><label class="form-label">MESSAGE</label><textarea class="form-input form-textarea" id="f-message" placeholder="Décris-moi ton projet..."></textarea></div>
+        <div id="form-status" style="font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:3px;display:none;padding:6px 0;"></div>
+        <button class="form-submit" type="button"><span>ENVOYER</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="flogo">RYFTAN</div><div class="fcopy">© 2026 — TOUS DROITS RÉSERVÉS</div></footer>
+
+<!-- ADMIN UNIFIÉ — 3 sections -->
+<button id="admin-trigger">⚙ ADMIN</button>
+<div id="content-admin">
+  <button class="cadmin-close" id="cadmin-close">[ FERMER ]</button>
+  <div class="cadmin-box">
+    <div class="cadmin-title">ADMIN <span id="admin-section-name">RYFTAN</span></div>
+    <div class="cadmin-sub" id="admin-section-sub">// VIDÉOS · PROJETS · AVIS</div>
+    <div class="cadmin-tabs">
+      <button class="cadmin-tab active" data-ctab="videos">VIDÉOS</button>
+      <button class="cadmin-tab" data-ctab="projets">PROJETS</button>
+      <button class="cadmin-tab" data-ctab="skills">SKILLS</button>
+      <button class="cadmin-tab" data-ctab="temoignages">AVIS</button>
+    </div>
+
+    <!-- VIDÉOS (YouTube uniquement) -->
+    <div class="cadmin-panel active" id="ctab-videos">
+      <div style="display:flex;gap:4px;margin-bottom:10px;">
+        <button class="cadmin-tab active" data-vtab="shorts" style="font-size:.65rem;padding:4px 10px;">SHORTS</button>
+        <button class="cadmin-tab" data-vtab="longues" style="font-size:.65rem;padding:4px 10px;">LONGUES</button>
+        <button class="cadmin-tab" data-vtab="videos" style="font-size:.65rem;padding:4px 10px;">MES VIDÉOS</button>
+      </div>
+      <div class="cadmin-list" id="vadmin-list"></div>
+      <span class="cadmin-label">LIEN YOUTUBE</span>
+      <input class="cadmin-input" id="vadmin-url" placeholder="https://youtu.be/xxx">
+      <span class="cadmin-label">TITRE</span>
+      <input class="cadmin-input" id="vadmin-title" placeholder="Titre de la vidéo">
+      <button class="cadmin-save" id="vadmin-add-btn">+ AJOUTER LA VIDÉO</button>
+    </div>
+
+    <!-- PROJETS -->
+    <div class="cadmin-panel" id="ctab-projets">
+      <div class="cadmin-list" id="cadmin-proj-list"></div>
+      <div class="cadmin-sep"></div>
+      <span class="cadmin-label">TITRE</span><input class="cadmin-input" id="cp-title" placeholder="Nom du projet">
+      <span class="cadmin-label">TYPE</span><input class="cadmin-input" id="cp-type" placeholder="// TYPE · CATÉGORIE">
+      <span class="cadmin-label">DESCRIPTION</span><textarea class="cadmin-textarea" id="cp-desc" placeholder="Description..."></textarea>
+      <span class="cadmin-label">TAGS (virgules)</span><input class="cadmin-input" id="cp-tags" placeholder="TAG1, TAG2">
+      <span class="cadmin-label">LIENS / DOCUMENTS</span>
+      <div id="cp-links-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <input class="cadmin-input" id="cp-link-name" placeholder="Nom du doc" style="margin:0;flex:1;">
+        <input class="cadmin-input" id="cp-link-url" placeholder="https://..." style="margin:0;flex:1;">
+        <button class="cadmin-save" id="cp-link-add" style="width:auto;padding:0 14px;margin:0;">+</button>
+      </div>
+      <button class="cadmin-save" id="cp-add-btn">+ AJOUTER LE PROJET</button>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="cadmin-panel" id="ctab-skills">
+      <div class="cadmin-list" id="cadmin-skill-list"></div>
+      <div class="cadmin-sep"></div>
+      <span class="cadmin-label">NOM DU SKILL</span><input class="cadmin-input" id="cs-name" placeholder="Ex: Mails de vente">
+      <span class="cadmin-label">DESCRIPTION</span><textarea class="cadmin-textarea" id="cs-desc" placeholder="Description du skill..."></textarea>
+      <span class="cadmin-label">TAG</span><input class="cadmin-input" id="cs-tag" placeholder="Ex: // EMAIL">
+      <button class="cadmin-save" id="cs-add-btn">+ AJOUTER LE SKILL</button>
+    </div>
+
+    <!-- AVIS -->
+    <div class="cadmin-panel" id="ctab-temoignages">
+      <div class="cadmin-list" id="cadmin-testi-list"></div>
+      <div class="cadmin-sep"></div>
+      <span class="cadmin-label">TEXTE</span><textarea class="cadmin-textarea" id="ct-text" placeholder="Témoignage..." style="min-height:90px;"></textarea>
+      <span class="cadmin-label">PROJET</span><input class="cadmin-input" id="ct-project" placeholder="Ex: Mon Projet">
+      <span class="cadmin-label">RÔLE</span><input class="cadmin-input" id="ct-role" placeholder="Ex: Directeur de projet">
+      <button class="cadmin-save" id="ct-add-btn">+ AJOUTER L'AVIS</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<script>
+// ── INIT
+const isMobile=window.innerWidth<=768;
+const modeBadge=document.getElementById('mode-badge');
+const cur=document.getElementById('cur');
+let hasMouse=false;
+if(isMobile){modeBadge.textContent='📱 MODE MOBILE';modeBadge.classList.add('mobile');}
+else{modeBadge.textContent='🖥 MODE PC';modeBadge.classList.add('desktop');}
+if(isMobile)cur.style.display='none';
+document.addEventListener('mousemove',e=>{if(isMobile)return;if(!hasMouse){hasMouse=true;document.body.classList.add('has-mouse');cur.classList.add('on');}cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';},{passive:true});
+document.querySelectorAll('a,button,.hcard,.stat,.skill-card,.proj-card,.clink,.tarif-btn').forEach(el=>{el.addEventListener('mouseenter',()=>{if(hasMouse)cur.classList.add('big');});el.addEventListener('mouseleave',()=>cur.classList.remove('big'));});
+
+// ── HERO NAME
+const nameEl=document.getElementById('hero-name-el');
+if(nameEl){'RYFTAN'.split('').forEach((ch,i)=>{const s=document.createElement('span');s.className='char';s.style.animationDelay=(0.28+i*.065)+'s';if(i>=3){const b=document.createElement('b');b.textContent=ch;s.appendChild(b);}else s.textContent=ch;nameEl.appendChild(s);});}
+
+// ── PARTICLES
+const hero=document.getElementById('hero');
+if(hero){function spawnP(){const p=document.createElement('div');p.className='particle';const s=Math.random()*5+2;p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*80}%;bottom:0;animation-duration:${Math.random()*6+5}s;background:${Math.random()>.6?'var(--red)':Math.random()>.5?'var(--ylw)':'rgba(255,255,255,.25)'};`;hero.appendChild(p);setTimeout(()=>p.remove(),12000);}for(let i=0;i<5;i++)setTimeout(spawnP,i*250);setInterval(spawnP,650);}
+
+// ── MENU P5
+const burger=document.getElementById('burger'),overlay=document.getElementById('p5-overlay'),panels=document.querySelectorAll('.p5-panel');
+if(burger&&overlay){
+function openMenu(){overlay.classList.add('open');burger.classList.add('open');document.body.style.overflow='hidden';if(![...panels].some(p=>p.classList.contains('active')))panels[0]?.classList.add('active');document.querySelectorAll('.bar-fill').forEach(b=>{b.style.width='0';setTimeout(()=>{b.style.width=b.dataset.val||'80%';},80);});}
+function closeMenu(){overlay.classList.remove('open');burger.classList.remove('open');document.body.style.overflow='';}
+burger.addEventListener('click',()=>overlay.classList.contains('open')?closeMenu():openMenu());
+document.getElementById('p5-bg')?.addEventListener('click',closeMenu);
+document.getElementById('p5-red')?.addEventListener('click',closeMenu);
+document.getElementById('p5-close')?.addEventListener('click',closeMenu);
+panels.forEach(p=>{p.addEventListener('mouseenter',()=>{panels.forEach(x=>x.classList.remove('active'));p.classList.add('active');});p.addEventListener('click',e=>{e.preventDefault();const href=p.getAttribute('href');closeMenu();setTimeout(()=>document.querySelector(href)?.scrollIntoView(),200);});});
+}
+
+// ── REVEAL
+const revEls=document.querySelectorAll('.reveal,.reveal-left,.reveal-right');
+(()=>{const ro=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:0.01});revEls.forEach(el=>ro.observe(el));})();
+if(isMobile)setTimeout(()=>revEls.forEach(el=>el.classList.add('in')),500);
+
+// ── TABS
+document.querySelectorAll('.wtab').forEach(tab=>{tab.addEventListener('click',()=>{const sec=tab.closest('section')||tab.closest('.msec')||document;sec.querySelectorAll('.wtab').forEach(t=>t.classList.remove('active'));sec.querySelectorAll('.writing-panel').forEach(p=>p.classList.remove('active'));tab.classList.add('active');document.getElementById('tab-'+tab.dataset.tab)?.classList.add('active');});});
+
+// ── CONTACT FORM
+document.querySelectorAll('.form-choice').forEach(btn=>{btn.addEventListener('click',()=>{btn.closest('.form-choices').querySelectorAll('.form-choice').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
+document.querySelector('.form-submit')?.addEventListener('click',async()=>{
+  const name=document.getElementById('f-name')?.value||'';const contact=document.getElementById('f-email')?.value||'';const message=document.getElementById('f-message')?.value||'';const type=document.querySelector('.form-choice.selected')?.textContent||'Non précisé';const status=document.getElementById('form-status');
+  if(!name||!message){if(status){status.style.display='block';status.style.color='var(--red)';status.textContent='⚠ REMPLIS TON NOM ET TON MESSAGE';}return;}
+  const btn=document.querySelector('.form-submit span');if(btn)btn.textContent='...';
+  try{const res=await fetch('https://formspree.io/f/xvzlyybp',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name,contact,type,message})});
+  if(res.ok){if(status){status.style.display='block';status.style.color='#7CFF6B';status.textContent='✓ MESSAGE ENVOYÉ !';}if(btn)btn.textContent='ENVOYÉ';}
+  else{if(status){status.style.display='block';status.style.color='var(--red)';status.textContent='✗ ERREUR';}if(btn)btn.textContent='ENVOYER';}}
+  catch(e){if(status){status.style.display='block';status.style.color='var(--red)';status.textContent='✗ PAS DE CONNEXION';}if(btn)btn.textContent='ENVOYER';}
+});
+
+// ── DATA
+const ADMIN_PWD='16072009@Bid';
+let currentSec='youtube';
+let data={
+  youtube:{videos:{shorts:[],longues:[],videos:[]},projects:{shorts:[],longues:[]},skills:[],testimonials:[]},
+  copywriting:{projects:[],skills:[],testimonials:[]},
+  narrative:{projects:[],skills:[],testimonials:[]}
+};
+let currentVTab='shorts';
+let pendingLinks=[];
+
+function saveData(){try{localStorage.setItem('ryftan_v3',JSON.stringify(data));}catch(e){}}
+function loadData(){try{const d=localStorage.getItem('ryftan_v3');if(d){const p=JSON.parse(d);if(p)data=p;}}catch(e){}}
+
+function getYTId(url){const m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
+
+function renderVideos(){
+  ['shorts','longues','videos'].forEach(tab=>{
+    const panel=document.getElementById('tab-'+tab);if(!panel)return;
+    let grid=panel.querySelector('.video-grid');
+    if(!grid){grid=document.createElement('div');grid.className='video-grid';panel.prepend(grid);}
+    const vids=(data.youtube.videos[tab])||[];grid.innerHTML='';
+    if(vids.length===0){grid.innerHTML='<div class="video-card"><div class="no-vid"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Ajoute via ⚙ ADMIN</div></div>';return;}
+    vids.forEach(v=>{const card=document.createElement('div');card.className='video-card';card.innerHTML=`<iframe src="https://www.youtube.com/embed/${v.id}" title="${v.title}" allowfullscreen loading="lazy"></iframe>`;grid.appendChild(card);});
+  });
+}
+
+function renderProjects(sec){
+  const d=data[sec];if(!d)return;
+  if(sec==='youtube'){
+    ['shorts','longues'].forEach(tab=>{
+      const grid=document.getElementById('yt-'+tab+'-static');if(!grid)return;
+      grid.querySelectorAll('.proj-card[data-dyn]').forEach(e=>e.remove());
+      (d.projects[tab]||[]).forEach((p,i)=>{const c=document.createElement('div');c.className='proj-card';c.dataset.dyn='1';c.innerHTML=`<div class="proj-n">0${i+2}</div><div class="proj-type">${p.type||'// PROJET'}</div><h3 class="proj-title">${p.title}</h3><p class="proj-desc">${p.desc}</p><div class="proj-tags">${(p.tags||[]).map(t=>`<span class="ptag">${t}</span>`).join('')}</div>`;grid.appendChild(c);});
+    });
+  } else if(sec==='copywriting'){
+    const grid=document.getElementById('cadmin-cp-proj-display');
+    if(grid){grid.querySelectorAll('.proj-card[data-dyn]').forEach(e=>e.remove());(d.projects||[]).forEach((p,i)=>{const c=document.createElement('div');c.className='proj-card';c.dataset.dyn='1';c.innerHTML=`<div class="proj-n">0${i+1}</div><div class="proj-type">${p.type||'// COPYWRITING'}</div><h3 class="proj-title">${p.title}</h3><p class="proj-desc">${p.desc}</p><div class="proj-tags">${(p.tags||[]).map(t=>`<span class="ptag">${t}</span>`).join('')}</div>`;grid.appendChild(c);});}
+  } else if(sec==='narrative'){
+    const grid=document.getElementById('nd-proj-static');
+    if(grid){grid.querySelectorAll('.nd-card[data-dyn]').forEach(e=>e.remove());(d.projects||[]).forEach((p,i)=>{
+      const linksHtml=(p.links||[]).map(l=>`<div class="nd-link-row"><span class="nd-link-name">${l.name}</span><a class="nd-link-btn" href="${l.url}" target="_blank">OUVRIR →</a></div>`).join('');
+      const c=document.createElement('div');c.className='nd-card';c.dataset.dyn='1';
+      c.innerHTML=`<div class="nd-card-head"><div class="nd-num">0${i+2}</div><div><span class="nd-type">${p.type||'// NARRATIVE DESIGN'}</span><h3 class="nd-title">${p.title}</h3></div></div><p class="nd-desc">${p.desc}</p>${linksHtml?`<div class="nd-links-block"><div class="nd-links-label">// DOCUMENTS</div><div class="nd-links-list">${linksHtml}</div></div>`:''}<div class="proj-tags">${(p.tags||[]).map(t=>`<span class="ptag">${t}</span>`).join('')}</div>`;
+      grid.appendChild(c);
+    });}
+  }
+}
+
+function renderTestimonials(sec){
+  const testis=(data[sec]?.testimonials)||[];if(testis.length===0)return;
+  const t=testis[testis.length-1];
+  const card=document.querySelector('.testi-card');
+  if(card){const tx=card.querySelector('.testi-text');const nm=card.querySelector('.testi-name');const rl=card.querySelector('.testi-role');if(tx)tx.textContent=t.text;if(nm)nm.textContent='// '+t.project;if(rl)rl.textContent=t.role;}
+}
+
+// ── RENDER ADMIN LISTS
+function renderVAdminList(){
+  const list=document.getElementById('vadmin-list');if(!list)return;list.innerHTML='';
+  const vids=(data.youtube.videos[currentVTab])||[];
+  if(vids.length===0){list.innerHTML='<span class="cadmin-empty">Aucune vidéo</span>';return;}
+  vids.forEach((v,i)=>{const item=document.createElement('div');item.className='cadmin-item';item.innerHTML=`<div class="cadmin-item-info"><div class="cadmin-item-title">${v.title}</div></div><button class="cadmin-del">✕</button>`;item.querySelector('.cadmin-del').addEventListener('click',()=>{data.youtube.videos[currentVTab].splice(i,1);saveData();renderVAdminList();renderVideos();});list.appendChild(item);});
+}
+
+function renderProjList(){
+  const list=document.getElementById('cadmin-proj-list');if(!list)return;list.innerHTML='';
+  let projs=[];
+  if(currentSec==='youtube')projs=[...(data.youtube.projects.shorts||[]),...(data.youtube.projects.longues||[])];
+  else projs=data[currentSec]?.projects||[];
+  if(projs.length===0){list.innerHTML='<span class="cadmin-empty">Aucun projet</span>';return;}
+  projs.forEach((p,i)=>{const item=document.createElement('div');item.className='cadmin-item';item.innerHTML=`<div class="cadmin-item-info"><div class="cadmin-item-title">${p.title}</div></div><button class="cadmin-del">✕</button>`;item.querySelector('.cadmin-del').addEventListener('click',()=>{if(currentSec==='youtube'){const allYt=[...(data.youtube.projects.shorts||[]),...(data.youtube.projects.longues||[])];const idx=allYt.indexOf(p);if(idx>-1){const inShorts=data.youtube.projects.shorts.indexOf(p);if(inShorts>-1)data.youtube.projects.shorts.splice(inShorts,1);else{const inLong=data.youtube.projects.longues.indexOf(p);if(inLong>-1)data.youtube.projects.longues.splice(inLong,1);}}}else{const arr=data[currentSec].projects;const idx=arr.indexOf(p);if(idx>-1)arr.splice(idx,1);}saveData();renderProjList();renderProjects(currentSec);});list.appendChild(item);});
+}
+
+function renderTestiList(){
+  const list=document.getElementById('cadmin-testi-list');if(!list)return;list.innerHTML='';
+  const testis=data[currentSec]?.testimonials||[];
+  if(testis.length===0){list.innerHTML='<span class="cadmin-empty">Aucun avis</span>';return;}
+  testis.forEach((t,i)=>{const item=document.createElement('div');item.className='cadmin-item';item.innerHTML=`<div class="cadmin-item-info"><div class="cadmin-item-title">${t.project}</div><div class="cadmin-item-desc">${t.text.substring(0,40)}...</div></div><button class="cadmin-del">✕</button>`;item.querySelector('.cadmin-del').addEventListener('click',()=>{data[currentSec].testimonials.splice(i,1);saveData();renderTestiList();renderTestimonials(currentSec);});list.appendChild(item);});
+}
+
+function renderPendingLinks(){
+  const list=document.getElementById('cp-links-list');if(!list)return;list.innerHTML='';
+  pendingLinks.forEach((l,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);padding:5px 8px;border-left:2px solid var(--red);margin-bottom:3px;';row.innerHTML=`<span style="font-family:sans-serif;font-size:.85rem;color:rgba(245,240,232,.6);flex:1;">${l.name}</span><button style="color:var(--red);background:none;border:1px solid rgba(232,0,29,.3);padding:1px 6px;cursor:pointer;">✕</button>`;row.querySelector('button').addEventListener('click',()=>{pendingLinks.splice(i,1);renderPendingLinks();});list.appendChild(row);});
+}
+
+// ── ADMIN TRIGGER
+document.getElementById('admin-trigger')?.addEventListener('click',()=>{
+  const pwd=prompt('[ MOT DE PASSE ADMIN ]');
+  if(pwd!==ADMIN_PWD){alert('Mot de passe incorrect.');return;}
+  // Update admin title
+  const names={youtube:'YOUTUBE P5R',copywriting:'COPYWRITING P4G',narrative:'NARRATIVE DESIGN P3R'};
+  const el=document.getElementById('admin-section-name');if(el)el.textContent=names[currentSec]||'RYFTAN';
+  // Show/hide video tab based on section
+  const vtab=document.querySelector('.cadmin-tab[data-ctab="videos"]');
+  if(vtab)vtab.style.display=currentSec==='youtube'?'':'none';
+  document.getElementById('content-admin')?.classList.add('open');
+  renderVAdminList();renderProjList();renderTestiList();
+});
+document.getElementById('cadmin-close')?.addEventListener('click',()=>document.getElementById('content-admin')?.classList.remove('open'));
+
+// Main admin tabs
+document.querySelectorAll('.cadmin-tab[data-ctab]').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.cadmin-tab[data-ctab]').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.cadmin-panel').forEach(p=>p.classList.remove('active'));tab.classList.add('active');document.getElementById('ctab-'+tab.dataset.ctab)?.classList.add('active');});});
+// Video sub-tabs
+document.querySelectorAll('.cadmin-tab[data-vtab]').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.cadmin-tab[data-vtab]').forEach(t=>t.classList.remove('active'));tab.classList.add('active');currentVTab=tab.dataset.vtab;renderVAdminList();});});
+
+// Add video
+document.getElementById('vadmin-add-btn')?.addEventListener('click',()=>{
+  const url=document.getElementById('vadmin-url').value.trim();const title=document.getElementById('vadmin-title').value.trim()||'Vidéo';const id=getYTId(url);
+  if(!id){alert('Lien YouTube invalide !');return;}
+  if(!data.youtube.videos[currentVTab])data.youtube.videos[currentVTab]=[];
+  data.youtube.videos[currentVTab].push({id,title});saveData();
+  document.getElementById('vadmin-url').value='';document.getElementById('vadmin-title').value='';
+  renderVAdminList();renderVideos();
+});
+
+// Add link
+document.getElementById('cp-link-add')?.addEventListener('click',()=>{
+  const name=document.getElementById('cp-link-name').value.trim();const url=document.getElementById('cp-link-url').value.trim();
+  if(!name||!url){alert('Nom et lien requis.');return;}
+  pendingLinks.push({name,url});document.getElementById('cp-link-name').value='';document.getElementById('cp-link-url').value='';renderPendingLinks();
+});
+
+// Add project
+document.getElementById('cp-add-btn')?.addEventListener('click',()=>{
+  const title=document.getElementById('cp-title').value.trim();const type=document.getElementById('cp-type').value.trim()||'// PROJET';const desc=document.getElementById('cp-desc').value.trim();const tags=document.getElementById('cp-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if(!title||!desc){alert('Titre et description requis.');return;}
+  const proj={title,type,desc,tags,links:[...pendingLinks]};
+  if(currentSec==='youtube'){if(!data.youtube.projects.shorts)data.youtube.projects.shorts=[];data.youtube.projects.shorts.push(proj);}
+  else{if(!data[currentSec].projects)data[currentSec].projects=[];data[currentSec].projects.push(proj);}
+  saveData();pendingLinks=[];
+  document.getElementById('cp-title').value='';document.getElementById('cp-type').value='';document.getElementById('cp-desc').value='';document.getElementById('cp-tags').value='';
+  renderPendingLinks();renderProjList();renderProjects(currentSec);
+});
+
+// Add testimonial
+document.getElementById('ct-add-btn')?.addEventListener('click',()=>{
+  const text=document.getElementById('ct-text').value.trim();const project=document.getElementById('ct-project').value.trim();const role=document.getElementById('ct-role').value.trim();
+  if(!text||!project){alert('Requis.');return;}
+  if(!data[currentSec].testimonials)data[currentSec].testimonials=[];
+  data[currentSec].testimonials.push({text,project,role});saveData();
+  document.getElementById('ct-text').value='';document.getElementById('ct-project').value='';document.getElementById('ct-role').value='';
+  renderTestiList();renderTestimonials(currentSec);
+});
+
+// ── LOADING + SPLASH
+loadData();
+{
+  const loadEl=document.getElementById('loading');const loadBar=document.getElementById('load-bar');const loadPct=document.getElementById('load-pct');const splash=document.getElementById('splash');
+  let pct=0;
+  const timer=setInterval(()=>{pct+=Math.random()*18+4;if(pct>=100){pct=100;clearInterval(timer);loadBar.style.width='100%';loadPct.textContent='100%';setTimeout(()=>{loadEl.classList.add('done');setTimeout(()=>{loadEl.style.display='none';splash.classList.add('show');},520);},300);}else{loadBar.style.width=Math.min(pct,95)+'%';loadPct.textContent=Math.floor(Math.min(pct,95))+'%';}},80);
+
+  function enterSec(sec){
+    currentSec=sec;
+    // DA
+    document.body.classList.remove('da-p3','da-p4');
+    if(sec==='narrative')document.body.classList.add('da-p3');
+    else if(sec==='copywriting')document.body.classList.add('da-p4');
+    // Tarifs
+    document.querySelectorAll('.tarifs-youtube,.tarifs-copywriting,.tarifs-narrative').forEach(t=>t.style.display='none');
+    const tg=document.querySelector('.tarifs-'+sec);if(tg)tg.style.display='grid';else{const ty=document.querySelector('.tarifs-youtube');if(ty)ty.style.display='grid';}
+    // Projets sections
+    const msecTabs=document.getElementById('msec-tabs');if(msecTabs)msecTabs.style.display='none';
+    document.querySelectorAll('.msec').forEach(s=>s.style.display='none');
+    if(sec==='youtube'){const t=document.getElementById('msec-youtube');if(t)t.style.display='block';}
+    else if(sec==='narrative'){const t=document.getElementById('msec-narrative');if(t)t.style.display='block';}
+    // Render data
+    renderVideos();renderProjects(sec);renderTestimonials(sec);
+    // Hero subtitle
+    const subs={youtube:'Rédacteur YouTube & Scriptwriter',copywriting:'Copywriter & Rédacteur Commercial',narrative:'Narrative Designer & World-Builder'};
+    document.querySelectorAll('.hero-sub').forEach(el=>el.textContent=subs[sec]||el.textContent);
+    // Close splash
+    splash.style.transition='opacity .5s';splash.style.opacity='0';setTimeout(()=>splash.style.display='none',550);
+  }
+
+  document.querySelectorAll('[data-sec]').forEach(panel=>{panel.addEventListener('click',()=>enterSec(panel.dataset.sec));});
+}
+
+document.querySelectorAll('.s-head').forEach(el=>{new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const t=e.target.querySelector('.s-title');if(t&&!t.dataset.f){t.dataset.f='1';t.classList.add('animate');}}});},{threshold:.3}).observe(el);});
+</script>
+</body>
+</html>
