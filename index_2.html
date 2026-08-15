@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ryftan — Narrative Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --void: #FFFFFF;
+  --paper: #FFFFFF;
+  --deep: #F7F2E6;
+  --dark: #F0E6CE;
+  --ink: #12203D;
+  --gold: #9C7A2E;
+  --gold-dim: #C9A860;
+  --bronze: #8B5E34;
+  --stone: #6E7078;
+  --sea: #1E3A66;
+  --mist: rgba(18,32,61,.62);
+  --fog: rgba(18,32,61,.42);
+  --line: rgba(30,58,102,.28);
+  --line2: rgba(30,58,102,.5);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--void);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Grain texture */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: .022;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Subtle gold vignette — adds warmth/depth without a flat gold background */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 8% 0%, rgba(169,130,46,.09) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 45% at 100% 100%, rgba(169,130,46,.07) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── CURSOR ── */
+#csr {
+  position: fixed;
+  width: 5px; height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: opacity .2s;
+}
+#csr-trail {
+  position: fixed;
+  width: 28px; height: 28px;
+  border: 1px solid rgba(191,155,78,.35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9997;
+  transform: translate(-50%,-50%);
+  transition: width .3s, height .3s, border-color .3s;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 5vw;
+  background: linear-gradient(to bottom, rgba(255,255,255,.92) 0%, transparent 100%);
+}
+.nav-wordmark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .6rem; letter-spacing: .3em;
+  color: var(--gold); text-decoration: none;
+  text-transform: uppercase;
+}
+.nav-r {
+  display: flex; align-items: center; gap: .6rem;
+}
+.nav-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .22em;
+  color: var(--fog); text-decoration: none;
+  text-transform: uppercase; transition: color .2s, border-color .2s;
+  border: 1px solid var(--line); padding: .5rem .9rem;
+}
+.nav-link:hover { color: var(--ink); border-color: var(--gold); }
+.nav-available {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .2em;
+  color: var(--gold); text-transform: uppercase;
+  display: flex; align-items: center; gap: .5rem;
+}
+.nav-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #5fce8a;
+  animation: breathe 2.5s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+
+.lang-switch {
+  display: flex; align-items: center; gap: .4rem;
+  margin-left: .6rem;
+}
+.lang-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .15em;
+  color: var(--fog); padding: .3rem .2rem;
+  transition: color .2s;
+}
+.lang-btn.active { color: var(--gold); }
+.lang-btn:hover { color: var(--ink); }
+.lang-sep { color: var(--line2); font-size: .55rem; }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: grid; grid-template-rows: 1fr auto;
+  padding: 0 5vw 8vh;
+  position: relative; overflow: hidden;
+}
+
+/* Horizon gradient — the sea at dusk */
+.hero-horizon {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 100% 55% at 50% 100%, rgba(30,58,102,.10) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 15%, rgba(156,122,46,.14) 0%, transparent 60%),
+    linear-gradient(to bottom, var(--void) 0%, #F4EDDA 60%, #EEE3C4 100%);
+}
+
+/* Subtle horizontal lines — water surface */
+.hero-waves {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px);
+  background-size: 100% 22px;
+  mask-image: linear-gradient(to top, rgba(0,0,0,.06) 0%, transparent 100%);
+}
+
+.hero-body {
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 6vh;
+  position: relative; z-index: 2;
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .6rem; letter-spacing: .45em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 2.2rem;
+  display: flex; align-items: center; gap: .9rem;
+  opacity: 0; animation: rise .9s .2s ease forwards;
+}
+.hero-eyebrow::before {
+  content: ''; display: block;
+  width: 28px; height: 1px; background: var(--gold);
+}
+
+.hero-h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.8rem, 10vw, 9.5rem);
+  font-weight: 300; line-height: .9;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  opacity: 0; animation: rise .9s .35s ease forwards;
+}
+.hero-h1 strong {
+  font-weight: 600; display: block;
+  background: linear-gradient(115deg, #8A6A1E 0%, #D4AF6A 25%, #9C7A2E 50%, #E8CE8A 75%, #8A6A1E 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: foilShift 7s ease-in-out infinite alternate;
+}
+@keyframes foilShift {
+  from { background-position: 0% center; }
+  to   { background-position: 100% center; }
+}
+.hero-h1 em {
+  font-style: italic; color: var(--gold);
+  font-weight: 300;
+}
+
+.hero-tagline {
+  margin-top: 2.2rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 300; font-style: italic;
+  color: var(--mist); line-height: 1.7;
+  max-width: 500px;
+  opacity: 0; animation: rise .9s .5s ease forwards;
+}
+
+.hero-contract {
+  margin-top: 2.5rem;
+  display: inline-flex; align-items: center; gap: .9rem;
+  border: 1px solid var(--line2); padding: .65rem 1.2rem;
+  opacity: 0; animation: rise .9s .65s ease forwards;
+}
+.hero-contract-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: #5fce8a;
+  animation: breathe 2.5s ease-in-out infinite;
+}
+.hero-contract span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .2em;
+  color: var(--fog); text-transform: uppercase;
+}
+.hero-contract strong { color: var(--ink); font-weight: 400; }
+
+.hero-scroll-hint {
+  position: relative; z-index: 2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .35em;
+  color: var(--gold-dim); text-transform: uppercase;
+  display: flex; align-items: center; gap: .8rem;
+  opacity: 0; animation: rise .8s .9s ease forwards;
+  padding-bottom: 1rem;
+}
+.hero-scroll-hint::after {
+  content: ''; width: 50px; height: 1px;
+  background: linear-gradient(to right, var(--gold-dim), transparent);
+}
+
+@keyframes rise {
+  from { opacity:0; transform: translateY(22px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── REVEAL ── */
+.r {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.r.in { opacity: 1; transform: none; }
+.r-l { opacity:0; transform:translateX(-18px); transition:opacity .7s,transform .7s; }
+.r-l.in { opacity:1; transform:none; }
+
+/* ── SECTION ANATOMY ── */
+.section-wrap { padding: 9vh 5vw; border-top: 1px solid var(--line); }
+
+.s-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .45em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: .7rem;
+}
+.s-label::before { content: ''; width: 16px; height: 1px; background: var(--gold); }
+
+.s-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3.8rem);
+  font-weight: 400; line-height: 1.05;
+  color: var(--ink); margin-bottom: 3.5rem;
+}
+.s-title em { font-style: italic; color: var(--gold); }
+
+/* ── ABOUT ── */
+.about-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 6vw; align-items: start;
+}
+.about-p {
+  font-size: .97rem; line-height: 1.95;
+  color: var(--mist); margin-bottom: 1.3rem;
+}
+.about-p strong { color: var(--ink); font-weight: 400; }
+
+/* Philosophy card */
+.about-philosophy {
+  margin-top: 2.5rem;
+  border-left: 1px solid var(--gold);
+  padding: 1.5rem 1.5rem 1.5rem 1.8rem;
+  background: rgba(191,155,78,.03);
+}
+.philosophy-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem; font-style: italic;
+  font-weight: 300; color: var(--ink);
+  line-height: 1.7; margin-bottom: .6rem;
+}
+.philosophy-attr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .25em;
+  color: var(--gold-dim); text-transform: uppercase;
+}
+
+/* Stats panel */
+.about-stats {
+  background: var(--deep);
+  border: 1px solid var(--line);
+}
+.stat-row {
+  padding: 1.6rem 1.8rem;
+  border-bottom: 1px solid var(--line);
+  transition: background .2s;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-row:hover { background: rgba(156,122,46,.05); }
+.stat-n {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.8rem; font-weight: 600;
+  color: var(--gold); line-height: 1;
+}
+.stat-l {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .22em;
+  color: var(--stone); text-transform: uppercase;
+  margin-top: .3rem;
+}
+
+/* Contract highlight */
+.contract-card {
+  margin-top: 1px;
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--gold);
+  padding: 1.6rem 1.8rem;
+}
+.contract-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .3em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: .8rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.contract-pill::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%; background: #5fce8a;
+}
+.contract-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--ink); margin-bottom: .4rem;
+}
+.contract-meta {
+  font-size: .82rem; line-height: 1.75; color: var(--fog);
+}
+
+/* ── PROJECTS ── */
+.proj-list { display: flex; flex-direction: column; border: 1px solid var(--line); padding: 0 2rem; }
+
+.proj-item {
+  border-bottom: 1px solid var(--line);
+  padding: 3.5rem 0;
+  display: grid;
+  grid-template-columns: 60px 1fr 140px;
+  gap: 2.5rem; align-items: start;
+  position: relative;
+  transition: padding-left .3s;
+  cursor: default;
+}
+.proj-item:last-child { border-bottom: none; }
+.proj-item::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 0;
+  background: linear-gradient(to right, rgba(191,155,78,.05), transparent);
+  transition: width .4s;
+}
+.proj-item:hover::before { width: 100%; }
+.proj-item:hover { padding-left: .5rem; }
+
+.proj-idx {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .6rem; letter-spacing: .15em;
+  color: var(--gold-dim); padding-top: .25rem;
+}
+
+.proj-main {}
+.proj-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .3em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: .7rem;
+}
+.proj-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  font-weight: 600; color: var(--ink);
+  line-height: 1.1; margin-bottom: .9rem;
+}
+.proj-desc {
+  font-size: .9rem; line-height: 1.85;
+  color: var(--mist); max-width: 520px;
+  margin-bottom: 1.4rem;
+}
+.proj-deliverables {
+  display: flex; flex-direction: column; gap: .45rem;
+}
+.deliverable {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .12em;
+  color: var(--fog);
+  display: flex; align-items: center; gap: .6rem;
+}
+.deliverable::before {
+  content: ''; width: 4px; height: 1px;
+  background: var(--gold-dim); flex-shrink: 0;
+}
+
+.proj-aside {
+  display: flex; flex-direction: column;
+  gap: .5rem; align-items: flex-end;
+  padding-top: .25rem;
+}
+.p-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .16em;
+  color: var(--fog); text-transform: uppercase;
+  border: 1px solid var(--line); padding: .25rem .6rem;
+  white-space: nowrap; transition: color .2s, border-color .2s;
+}
+.proj-item:hover .p-chip { color: var(--gold-dim); border-color: var(--line2); }
+.p-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .16em;
+  text-transform: uppercase; padding: .3rem .7rem;
+  border: 1px solid; white-space: nowrap;
+  margin-top: .5rem;
+}
+.active { color: #5fce8a; border-color: rgba(95,206,138,.25); }
+.dev    { color: var(--gold); border-color: var(--line2); }
+.done   { color: var(--fog);  border-color: var(--line); }
+
+/* ── METHOD (design philosophy / pipeline proof) ── */
+.method-intro {
+  font-size: .95rem; line-height: 1.9;
+  color: var(--mist); max-width: 640px;
+  margin-bottom: 3rem;
+}
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 1px;
+}
+.pillar-card {
+  background: var(--void);
+  padding: 2.1rem 1.9rem;
+  transition: background .25s;
+}
+.pillar-card:hover { background: var(--deep); }
+.pillar-idx {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .2em;
+  color: var(--gold-dim); margin-bottom: .9rem;
+}
+.pillar-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--ink); margin-bottom: .6rem;
+}
+.pillar-desc {
+  font-size: .83rem; line-height: 1.85;
+  color: var(--fog);
+}
+
+.phase-track {
+  margin-top: 2.5rem;
+  padding: 1.8rem;
+  background: var(--deep);
+  border: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: .6rem;
+}
+.phase-chip {
+  display: flex; align-items: baseline; gap: .5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .1em;
+  color: var(--fog); text-transform: uppercase;
+  border: 1px solid var(--line2); padding: .4rem .7rem;
+  white-space: nowrap;
+}
+.phase-chip b { color: var(--gold); font-weight: 400; }
+
+/* ── ARCHIVE NOTE ── */
+.archive-note {
+  margin-top: 2.5rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px dashed var(--line2);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.archive-note-text {
+  font-size: .82rem; color: var(--fog); line-height: 1.7; max-width: 560px;
+}
+.archive-note-text strong { color: var(--ink); font-weight: 400; }
+.archive-note-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .2em;
+  color: var(--gold); text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── SKILLS ── */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line);
+}
+.sk-card {
+  background: var(--void);
+  padding: 2.2rem 1.8rem;
+  transition: background .25s;
+}
+.sk-card:hover { background: var(--deep); }
+.sk-glyph {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem; color: var(--gold);
+  margin-bottom: 1rem; line-height: 1;
+}
+.sk-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-weight: 600;
+  color: var(--ink); margin-bottom: .5rem;
+}
+.sk-desc {
+  font-size: .82rem; line-height: 1.8;
+  color: var(--fog);
+}
+.sk-tools {
+  margin-top: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .18em;
+  color: var(--gold-dim); text-transform: uppercase;
+}
+
+/* ── MANIFESTO ── */
+.manifesto-wrap {
+  padding: 9vh 5vw;
+  border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: 1fr 2fr;
+  gap: 6vw; align-items: start;
+}
+.manifesto-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .45em;
+  color: var(--gold); text-transform: uppercase;
+  padding-top: .4rem;
+}
+.manifesto-lines {
+  display: flex; flex-direction: column; gap: 1.8rem;
+}
+.manifesto-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  font-weight: 300; line-height: 1.55;
+  color: var(--mist); padding-bottom: 1.8rem;
+  border-bottom: 1px solid var(--line);
+}
+.manifesto-line:last-child { border-bottom: none; padding-bottom: 0; }
+.manifesto-line em { font-style: italic; color: var(--ink); }
+
+/* ── CONTACT ── */
+.contact-wrap {
+  padding: 9vh 5vw 10vh;
+  border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: .85fr 1.5fr;
+  gap: 4vw; align-items: start;
+}
+.contact-right {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2.2rem; align-items: start;
+}
+.contact-calendar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .22em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: .9rem;
+}
+.contact-calendar-box {
+  border: 1px solid var(--line);
+  background: var(--deep);
+  min-height: 480px;
+  overflow: hidden;
+}
+.contact-calendar-fallback {
+  padding: 2rem 1.4rem;
+  font-size: .78rem; line-height: 1.7;
+  color: var(--stone);
+}
+.contact-left {}
+.contact-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-weight: 300; line-height: .95;
+  color: var(--ink); margin-bottom: 1.5rem;
+}
+.contact-title em { font-style: italic; color: var(--gold); }
+.contact-sub {
+  font-size: .9rem; line-height: 1.85;
+  color: var(--fog); max-width: 400px;
+}
+.contact-links {
+  display: flex; flex-direction: column;
+  gap: 0; padding-top: 1rem;
+}
+.c-link {
+  display: flex; align-items: center; gap: 1.2rem;
+  text-decoration: none; color: var(--ink);
+  padding: 1.3rem 0;
+  border-bottom: 1px solid var(--line);
+  transition: padding-left .25s;
+}
+.c-link:hover { padding-left: .5rem; }
+.c-link:hover .c-arrow { color: var(--gold); transform: translateX(4px); }
+.c-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .25em;
+  color: var(--gold); text-transform: uppercase;
+  min-width: 72px;
+}
+.c-val {
+  font-size: .9rem; color: var(--mist);
+  transition: color .2s;
+}
+.c-link:hover .c-val { color: var(--ink); }
+.c-arrow {
+  margin-left: auto; color: var(--fog);
+  font-size: .9rem; transition: transform .25s, color .25s;
+}
+
+/* ── CONTACT FORM ── */
+.contact-form {
+  display: flex; flex-direction: column; gap: 1.6rem;
+  border: 1px solid var(--line);
+  padding: 2rem 1.9rem;
+}
+.form-row { display: flex; gap: 1.2rem; }
+.form-field { flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+.form-field label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .22em;
+  color: var(--gold); text-transform: uppercase;
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: transparent;
+  border: none; border-bottom: 1px solid var(--line2);
+  color: var(--ink);
+  font-family: inherit; font-size: .92rem;
+  padding: .6rem 0;
+  outline: none;
+  transition: border-color .2s;
+}
+.form-field select { cursor: pointer; }
+.form-field textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+.form-field input::placeholder,
+.form-field textarea::placeholder { color: var(--fog); }
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus { border-color: var(--gold); }
+.form-submit {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: .8rem;
+  background: var(--gold); color: var(--paper);
+  border: none; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .58rem; letter-spacing: .2em;
+  text-transform: uppercase; font-weight: 500;
+  padding: .95rem 1.6rem;
+  transition: background .2s, transform .2s;
+  margin-top: .4rem;
+}
+.form-submit:hover { background: #85661F; transform: translateX(2px); }
+.form-note {
+  font-size: .74rem; color: var(--stone); line-height: 1.6;
+}
+.contact-quicklinks {
+  display: flex; flex-wrap: wrap; gap: 1.6rem;
+  margin-top: 2.4rem; padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+}
+.quicklink {
+  display: flex; align-items: baseline; gap: .5rem;
+  text-decoration: none;
+}
+.quicklink .c-type { min-width: 0; }
+.quicklink .c-val { font-size: .82rem; }
+.quicklink:hover .c-val { color: var(--gold); }
+
+/* ── PRICING / CTA ── */
+.rate-card {
+  margin-top: 2.2rem;
+  border: 1px solid var(--line2);
+  border-left: 2px solid var(--gold);
+  background: var(--deep);
+  padding: 1.5rem 1.7rem;
+}
+.rate-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; margin-bottom: .9rem;
+}
+.rate-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .22em;
+  color: var(--fog); text-transform: uppercase;
+}
+.rate-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; font-weight: 600;
+  color: var(--gold);
+}
+.rate-note {
+  font-size: .8rem; line-height: 1.7;
+  color: var(--stone); margin-bottom: 1.3rem;
+}
+.cta-primary {
+  display: inline-flex; align-items: center; gap: .8rem;
+  background: var(--gold); color: var(--paper);
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .58rem; letter-spacing: .2em;
+  text-transform: uppercase; font-weight: 500;
+  padding: .95rem 1.6rem;
+  transition: background .2s, transform .2s;
+}
+.cta-primary:hover { background: #85661F; transform: translateX(2px); }
+
+/* ── FOOTER ── */
+footer {
+  padding: 1.5rem 5vw;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.f-l {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .2em;
+  color: var(--fog); text-transform: uppercase;
+}
+.f-r {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .15em;
+  color: rgba(242,237,230,.12); text-transform: uppercase;
+}
+
+/* ── PROOF ── */
+.proof-contract {
+  background: var(--deep);
+  border: 4px solid var(--sea);
+  box-shadow: 0 0 0 8px var(--void), 0 0 0 10px var(--line2);
+  margin: 14px 14px 3.8rem;
+  overflow: visible;
+  position: relative;
+}
+.proof-contract::before,
+.proof-contract::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-color: var(--sea);
+  border-style: solid; border-width: 0;
+}
+.proof-contract::before { top: -13px; left: -13px; border-top-width: 3px; border-left-width: 3px; }
+.proof-contract::after  { bottom: -13px; right: -13px; border-bottom-width: 3px; border-right-width: 3px; }
+.proof-contract-label {
+  padding: .8rem 1.8rem;
+  border-bottom: 2px solid var(--sea);
+  background: rgba(30,58,102,.05);
+}
+.proof-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .3em;
+  color: var(--gold); text-transform: uppercase;
+}
+.proof-contract-body {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 2rem 1.8rem; gap: 2rem;
+}
+.proof-contract-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 600;
+  color: #0A0A0A; margin-bottom: .3rem;
+}
+.proof-contract-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .2em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+.proof-contract-rows {
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.proof-row {
+  display: flex; gap: 1.5rem; align-items: baseline;
+}
+.proof-row-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .2em;
+  color: var(--bronze); text-transform: uppercase;
+  min-width: 80px; flex-shrink: 0;
+}
+.proof-row-v {
+  font-size: .85rem; color: #0A0A0A;
+}
+.proof-contract-seal { flex-shrink: 0; }
+.seal-outer {
+  width: 90px; height: 90px; border-radius: 50%;
+  border: 3px solid var(--gold);
+  background: rgba(169,130,46,.06);
+  display: flex; align-items: center; justify-content: center;
+}
+.seal-inner {
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 2px solid var(--gold);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: .2rem;
+}
+.seal-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .2em;
+  color: var(--gold); text-transform: uppercase;
+}
+.seal-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .38rem; letter-spacing: .1em;
+  color: var(--fog); text-transform: uppercase;
+}
+
+/* Document excerpt — bible / lore proof */
+.proof-doc {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  margin-bottom: 3rem;
+  overflow: hidden;
+}
+.proof-doc-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+  padding: 1.7rem 1.8rem;
+  border-bottom: 1px solid var(--line);
+}
+.proof-doc-chips {
+  display: flex; flex-wrap: wrap; gap: .5rem;
+}
+.doc-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .16em;
+  color: var(--stone); text-transform: uppercase;
+  border: 1px solid var(--line2); padding: .3rem .65rem;
+  white-space: nowrap;
+}
+.doc-chip.gold { color: var(--gold-dim); border-color: var(--line2); }
+
+.excerpt-list { display: flex; flex-direction: column; }
+.excerpt-row {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 1.6rem;
+  padding: 2rem 1.8rem;
+  border-bottom: 1px solid var(--line);
+}
+.excerpt-row:last-child { border-bottom: none; }
+.excerpt-idx {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .6rem; letter-spacing: .1em;
+  color: var(--gold-dim); padding-top: .2rem;
+}
+.excerpt-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .28em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: .7rem;
+}
+.excerpt-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem; font-style: italic;
+  font-weight: 300; line-height: 1.8;
+  color: var(--mist);
+}
+.excerpt-text em { color: var(--ink); font-style: italic; }
+.excerpt-ref {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; font-style: normal;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--bronze); margin-top: .9rem;
+}
+.excerpt-ref::before { content: '§ '; color: var(--gold-dim); }
+
+.testimonials-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--line);
+}
+.testimonials-grid.single { grid-template-columns: 1fr; max-width: 720px; }
+.testimonials-grid.single .testi-card {
+  border-left: 1px solid var(--gold);
+  background: rgba(191,155,78,.025);
+}
+.testi-card {
+  background: var(--deep);
+  padding: 2.5rem 2rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  transition: background .2s;
+}
+.testi-card:hover { background: var(--dark); }
+.testi-quote-mark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4rem; line-height: .7;
+  color: var(--gold); opacity: .4;
+}
+.testi-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem; font-style: italic;
+  font-weight: 300; line-height: 1.75;
+  color: var(--mist); flex: 1;
+  quotes: none; border: none;
+  padding: 0; margin: 0;
+}
+.testi-author { border-top: 1px solid var(--line); padding-top: 1rem; }
+.testi-author-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; font-weight: 600; color: var(--ink);
+  margin-bottom: .2rem;
+}
+.testi-author-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .18em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: .2rem;
+}
+.testi-author-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .15em;
+  color: var(--fog); text-transform: uppercase;
+}
+
+/* ── TABLET ── */
+@media (max-width: 1050px) {
+  .contact-right { grid-template-columns: 1fr; }
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .about-layout, .manifesto-wrap, .contact-wrap { grid-template-columns: 1fr; gap: 3rem; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .pillars-grid { grid-template-columns: 1fr; }
+  .archive-note { flex-direction: column; align-items: flex-start; }
+  .form-row { flex-direction: column; gap: 1.6rem; }
+  .service-item { grid-template-columns: 1fr; gap: .8rem; text-align: left; }
+  .service-meta { text-align: left; }
+  .proj-item { grid-template-columns: 40px 1fr; }
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .testimonials-grid.single { max-width: none; }
+  .proof-contract-body { flex-direction: column; }
+  .proof-doc-meta { padding: 1.4rem 1.2rem; }
+  .excerpt-row { grid-template-columns: 28px 1fr; padding: 1.5rem 1.2rem; gap: 1rem; }
+  .proof-contract-seal { display: none; }
+  .proj-aside { display: none; }
+  nav { padding: 18px 5vw; }
+  .nav-r .nav-link { display: none; }
+  footer { flex-direction: column; gap: .4rem; text-align: center; }
+}
+
+/* ── INTERACTIVE DEMO (branching dialogue skeleton) ── */
+.demo-intro {
+  font-size: .9rem; line-height: 1.8;
+  color: var(--mist); max-width: 620px;
+  margin-bottom: 2.5rem;
+}
+.demo-widget {
+  border: 3px solid var(--sea);
+  background: var(--deep);
+  max-width: 640px;
+  padding: 2.8rem 2.4rem;
+  min-height: 260px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.demo-node-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .5rem; letter-spacing: .2em;
+  color: var(--bronze); text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.demo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 400;
+  line-height: 1.6; color: var(--ink);
+  min-height: 90px;
+  transition: opacity .25s ease;
+}
+.demo-text.fading { opacity: 0; }
+.demo-choices {
+  display: flex; flex-direction: column; gap: .8rem;
+}
+.demo-choice-btn {
+  text-align: left;
+  background: var(--void);
+  border: 1px solid var(--line2);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-size: .85rem;
+  padding: .9rem 1.2rem;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.demo-choice-btn:hover {
+  border-color: var(--gold);
+  background: var(--dark);
+  transform: translateX(3px);
+}
+.demo-choice-btn::before {
+  content: '→ ';
+  color: var(--gold);
+}
+.demo-restart {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .55rem; letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold); cursor: pointer;
+  padding: 0;
+}
+.demo-restart:hover { color: var(--bronze); }
+.demo-note {
+  margin-top: 1.4rem;
+  font-size: .78rem; color: var(--stone); line-height: 1.7;
+  max-width: 640px;
+}
+
+/* ── SERVICES & RATES ── */
+.services-list { border: 1px solid var(--line); }
+.service-item {
+  display: grid;
+  grid-template-columns: 1fr 160px;
+  gap: 2rem; align-items: center;
+  padding: 2rem 1.8rem;
+  border-bottom: 1px solid var(--line);
+  transition: background .2s;
+}
+.service-item:last-child { border-bottom: none; }
+.service-item:hover { background: var(--deep); }
+.service-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem; font-weight: 600;
+  color: var(--ink); margin-bottom: .4rem;
+}
+.service-desc {
+  font-size: .85rem; line-height: 1.7;
+  color: var(--mist); max-width: 520px;
+}
+.service-meta {
+  text-align: right;
+}
+.service-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem; font-weight: 600;
+  color: var(--gold);
+}
+.service-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .48rem; letter-spacing: .15em;
+  color: var(--stone); text-transform: uppercase;
+  margin-top: .3rem;
+}
+.services-footnote {
+  margin-top: 1.6rem;
+  font-size: .8rem; color: var(--stone); line-height: 1.7;
+}
+
+/* ══════════════════════════════════════
+   ADDED ANIMATIONS (kept minimal)
+   ══════════════════════════════════════ */
+
+/* Card hover lift — projects, skills, pillars, testimonials, excerpts */
+.proj-item, .sk-card, .pillar-card, .testi-card, .excerpt-row {
+  transition: background .25s, transform .3s ease, box-shadow .3s ease;
+}
+.proj-item:hover, .pillar-card:hover, .excerpt-row:hover,
+.sk-card:hover, .testi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -16px rgba(18,32,61,.2);
+}
+
+/* Section label underline draw-in on reveal */
+.s-label {
+  position: relative;
+  display: inline-block;
+  padding-bottom: .5rem;
+}
+.s-label::after {
+  content: '';
+  position: absolute; left: 0; bottom: 0;
+  width: 0; height: 1px; background: var(--gold);
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+.s-label.in::after { width: 48px; }
+
+/* Chip hover */
+.p-chip, .doc-chip, .phase-chip {
+  transition: border-color .2s ease, color .2s ease;
+}
+.p-chip:hover, .doc-chip:hover, .phase-chip:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="csr"></div>
+<div id="csr-trail"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-wordmark" href="#">Ryftan</a>
+  <div class="nav-r">
+    <a class="nav-link" data-i18n="nav.about" href="#about">About</a>
+    <a class="nav-link" data-i18n="nav.work" href="#work">Work</a>
+    <a class="nav-link" data-i18n="nav.method" href="#method">Method</a>
+    <a class="nav-link" data-i18n="nav.skills" href="#skills">Skills</a>
+    <a class="nav-link" data-i18n="nav.demo" href="#demo">Demo</a>
+    <a class="nav-link" data-i18n="nav.rates" href="#services">Rates</a>
+    <a class="nav-link" data-i18n="nav.contact" href="#contact">Contact</a>
+    <div class="nav-available">
+      <div class="nav-dot"></div>
+      <span data-i18n="nav.open">Open to work</span>
+    </div>
+    <div class="lang-switch">
+      <button type="button" class="lang-btn active" data-lang="en">EN</button>
+      <span class="lang-sep">/</span>
+      <button type="button" class="lang-btn" data-lang="fr">FR</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-horizon"></div>
+  <div class="hero-waves"></div>
+
+  <div class="hero-body">
+    <div class="hero-eyebrow" data-i18n="hero.eyebrow">Narrative Designer · Dusk Harbor · Lyon, France</div>
+
+    <h1 class="hero-h1">
+      <strong>Ryftan</strong>
+      <em>.</em>
+    </h1>
+
+    <p class="hero-tagline" data-i18n="hero.tagline">
+      Narrative design for games — world-building, character systems,<br>
+      and the production docs that hold a story together.
+    </p>
+
+    <div class="hero-contract">
+      <div class="hero-contract-dot"></div>
+      <span data-i18n="hero.contract">Under contract — <strong>Tides of Eternity · Olympos Games</strong></span>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint" data-i18n="hero.scroll">Scroll to explore</div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<div class="section-wrap" id="about">
+  <div class="s-label r" data-i18n="about.label">About</div>
+  <h2 class="s-title r" data-i18n="about.title">A bit about the work.</h2>
+
+  <div class="about-layout">
+    <div>
+      <p class="about-p r" data-i18n="about.p1">I'm a <strong>narrative designer</strong> operating under <strong>Dusk Harbor</strong> — a studio built on the conviction that the best game stories are constructed, not written. Architecture first. Voice after.</p>
+      <p class="about-p r" data-i18n="about.p2">My work starts where most writers stop: the frameworks, systems, and pipelines that make a narrative coherent at every level of production. I think in hierarchies — creative vision, world logic, character architecture, then dialogue.</p>
+      <p class="about-p r" data-i18n="about.p3">Currently under contract with <strong>Olympos Games</strong> (Turkey) as Narrative Lead on <em>Tides of Eternity</em>, directing 2-3 other narrative designers off the frameworks I built for the project — a 14-person action-RPG roguelite targeting Steam in mid-2028.</p>
+
+      <div class="about-philosophy r">
+        <p class="philosophy-quote" data-i18n="about.quote">"A world that feels real doesn't explain itself. It just exists — and everything in it knows why."</p>
+        <div class="philosophy-attr" data-i18n="about.quoteAttr">— On narrative architecture</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="about-stats r">
+        <div class="stat-row">
+          <div class="stat-n">2+</div>
+          <div class="stat-l" data-i18n="about.stat1">Active projects in production</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-n">4</div>
+          <div class="stat-l" data-i18n="about.stat2">Major documents delivered</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-n">2-3</div>
+          <div class="stat-l" data-i18n="about.stat3">Narrative designers directed</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-n">17</div>
+          <div class="stat-l" data-i18n="about.stat4">Years old. Starting early.</div>
+        </div>
+      </div>
+
+      <div class="contract-card r">
+        <div class="contract-pill" data-i18n="about.contractPill">Active contract</div>
+        <div class="contract-name">Tides of Eternity — Olympos Games</div>
+        <div class="contract-meta" data-i18n="about.contractMeta">
+          Signed July 2026 · Narrative Lead<br>
+          14-person international studio · Turkey<br>
+          Delivered: Narrative Architecture, 14-phase Pipeline, Environmental Framework<br>
+          Target: PC / Steam · Mid-2028
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WORK ══ -->
+<div class="section-wrap" id="work">
+  <div class="s-label r">Selected work</div>
+  <h2 class="s-title r">Selected projects.</h2>
+
+  <div class="proj-list">
+
+    <div class="proj-item r">
+      <div class="proj-idx">01</div>
+      <div class="proj-main">
+        <div class="proj-tag" data-i18n="work.toe.tag">Action-RPG Roguelite · Olympos Games · Turkey · 2026</div>
+        <h3 class="proj-name">Tides of Eternity</h3>
+        <p class="proj-desc" data-i18n="work.toe.desc">Complete narrative architecture for a 14-person international studio building a Greek mythology-inspired action-RPG. My mandate: design the full production framework before a single piece of content was written — the foundation everything else would rest on.</p>
+        <div class="proj-deliverables">
+          <div class="deliverable" data-i18n="work.toe.d1">Integral Narrative Architecture Document</div>
+          <div class="deliverable" data-i18n="work.toe.d2">Narrative Design Pipeline — 14 production phases</div>
+          <div class="deliverable" data-i18n="work.toe.d3">Narrative Production Framework</div>
+          <div class="deliverable" data-i18n="work.toe.d4">Environmental & Atmospheric Documentation</div>
+        </div>
+      </div>
+      <div class="proj-aside">
+        <span class="p-chip" data-i18n="work.toe.c1">Architecture</span>
+        <span class="p-chip" data-i18n="work.toe.c2">Pipeline</span>
+        <span class="p-chip" data-i18n="work.toe.c3">World-Building</span>
+        <span class="p-chip" data-i18n="work.toe.c4">Env. Design</span>
+        <span class="p-status active" data-i18n="work.toe.status">● Active</span>
+      </div>
+    </div>
+
+    <div class="proj-item r">
+      <div class="proj-idx">02</div>
+      <div class="proj-main">
+        <div class="proj-tag" data-i18n="work.tl.tag">Psychological Horror · Dusk Harbor · Original IP · In Development</div>
+        <h3 class="proj-name">Too Late</h3>
+        <p class="proj-desc" data-i18n="work.tl.desc">A solo-developed psychological horror game built in GameMaker. A person walks home alone through a forest at night, receiving increasingly disturbing text messages. Four endings, each anchored to a distinct philosophical proposition. The question isn't what's in the forest — it's whether the mind can survive not knowing.</p>
+        <div class="proj-deliverables">
+          <div class="deliverable" data-i18n="work.tl.d1">Original concept, narrative design & game development</div>
+          <div class="deliverable" data-i18n="work.tl.d2">Four-ending philosophical structure</div>
+          <div class="deliverable" data-i18n="work.tl.d3">Dialogue system — Undertale-influenced, letter-by-letter</div>
+          <div class="deliverable" data-i18n="work.tl.d4">Playable demo — coming to itch.io</div>
+        </div>
+      </div>
+      <div class="proj-aside">
+        <span class="p-chip" data-i18n="work.tl.c1">Original IP</span>
+        <span class="p-chip" data-i18n="work.tl.c2">Horror</span>
+        <span class="p-chip" data-i18n="work.tl.c3">Game Dev</span>
+        <span class="p-chip" data-i18n="work.tl.c4">4 Endings</span>
+        <span class="p-status dev" data-i18n="work.tl.status">◈ In Dev</span>
+      </div>
+    </div>
+
+    <div class="proj-item r">
+      <div class="proj-idx">03</div>
+      <div class="proj-main">
+        <div class="proj-tag" data-i18n="work.rk.tag">2D Platformer · Narrative Bible · French & English</div>
+        <h3 class="proj-name">Rocky — Verdania</h3>
+        <p class="proj-desc" data-i18n="work.rk.desc">A rabbit. A nation built on lies. A government that forgot the people it was built for. Full narrative bible for a 2D platformer set in the fictional country of Verdania — world-building, character architecture, faction systems, and two alternate endings with distinct ideological conclusions. Delivered in both French and English.</p>
+        <div class="proj-deliverables">
+          <div class="deliverable" data-i18n="work.rk.d1">Full narrative bible — FR & EN</div>
+          <div class="deliverable" data-i18n="work.rk.d2">Character architecture — protagonist, antagonists, supporting cast</div>
+          <div class="deliverable" data-i18n="work.rk.d3">Faction & political system design</div>
+          <div class="deliverable" data-i18n="work.rk.d4">Dual ending structure with philosophical divergence</div>
+        </div>
+      </div>
+      <div class="proj-aside">
+        <span class="p-chip" data-i18n="work.rk.c1">World-Building</span>
+        <span class="p-chip" data-i18n="work.rk.c2">Characters</span>
+        <span class="p-chip" data-i18n="work.rk.c3">Bilingual</span>
+        <span class="p-chip" data-i18n="work.rk.c4">Dual Ending</span>
+        <span class="p-status done" data-i18n="work.rk.status">✓ Delivered</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="archive-note r">
+    <div class="archive-note-text" data-i18n="work.archiveText">Additional narrative documents — character psychology sheets, faction relationship matrices, and dialogue voice profiles — <strong>available on request</strong>. Some work is under NDA or partner confidentiality.</div>
+    <div class="archive-note-tag" data-i18n="work.archiveTag">8 documents delivered to date</div>
+  </div>
+</div>
+
+<!-- ══ METHOD ══ -->
+<div class="section-wrap" id="method">
+  <div class="s-label r" data-i18n="method.label">From the Tides of Eternity contract</div>
+  <h2 class="s-title r" data-i18n="method.title">How I actually work.</h2>
+  <p class="method-intro r" data-i18n="method.intro">Before a single line of dialogue was written, Olympos Games needed a framework the whole narrative department could build on. This is a condensed look at what I designed: four governing pillars, and the 14-phase production pipeline that structures every document that follows.</p>
+
+  <div class="pillars-grid">
+    <div class="pillar-card r">
+      <div class="pillar-idx">P1</div>
+      <div class="pillar-name" data-i18n="method.p1.name">The World Remembers</div>
+      <p class="pillar-desc" data-i18n="method.p1.desc">Persistent consequence is the spine of the design. Player actions alter relationships, modify environments, and echo later — even the small ones. Nothing disappears completely.</p>
+    </div>
+    <div class="pillar-card r">
+      <div class="pillar-idx">P2</div>
+      <div class="pillar-name" data-i18n="method.p2.name">Emotional Ambiguity</div>
+      <p class="pillar-desc" data-i18n="method.p2.desc">No good/evil binaries. Characters carry understandable motivations, contradictions, and vulnerabilities — the player should genuinely debate their own choices afterward.</p>
+    </div>
+    <div class="pillar-card r">
+      <div class="pillar-idx">P3</div>
+      <div class="pillar-name" data-i18n="method.p3.name">Discovery Through Observation</div>
+      <p class="pillar-desc" data-i18n="method.p3.desc">The story rarely over-explains itself. Architecture, tone, and recurring symbols reveal information progressively — the player investigates, rather than gets told.</p>
+    </div>
+    <div class="pillar-card r">
+      <div class="pillar-idx">P4</div>
+      <div class="pillar-name" data-i18n="method.p4.name">Narrative Integration</div>
+      <p class="pillar-desc" data-i18n="method.p4.desc">Story isn't placed on top of gameplay — story is gameplay. Mechanics and progression systems are built to reinforce the same themes the narrative is carrying.</p>
+    </div>
+  </div>
+
+  <div class="phase-track r">
+    <div class="phase-chip"><b>01</b> <span data-i18n="phase.1">Core Foundation</span></div>
+    <div class="phase-chip"><b>02</b> <span data-i18n="phase.2">World History</span></div>
+    <div class="phase-chip"><b>03</b> <span data-i18n="phase.3">Faction Structures</span></div>
+    <div class="phase-chip"><b>04</b> <span data-i18n="phase.4">Character Psychology</span></div>
+    <div class="phase-chip"><b>05</b> <span data-i18n="phase.5">Main Story Structure</span></div>
+    <div class="phase-chip"><b>06</b> <span data-i18n="phase.6">Gameplay Integration</span></div>
+    <div class="phase-chip"><b>07</b> <span data-i18n="phase.7">Environmental Storytelling</span></div>
+    <div class="phase-chip"><b>08</b> <span data-i18n="phase.8">Dialogue Systems</span></div>
+    <div class="phase-chip"><b>09</b> <span data-i18n="phase.9">Enemy Lore</span></div>
+    <div class="phase-chip"><b>10</b> <span data-i18n="phase.10">Memory & Consequence</span></div>
+    <div class="phase-chip"><b>11</b> <span data-i18n="phase.11">Optional Lore</span></div>
+    <div class="phase-chip"><b>12</b> <span data-i18n="phase.12">Cutscene Docs</span></div>
+    <div class="phase-chip"><b>13</b> <span data-i18n="phase.13">Voice & Tone</span></div>
+    <div class="phase-chip"><b>14</b> <span data-i18n="phase.14">Production Priorities</span></div>
+  </div>
+</div>
+
+<!-- ══ SKILLS ══ -->
+<div class="section-wrap" id="skills">
+  <div class="s-label r" data-i18n="skills.label">Capabilities</div>
+  <h2 class="s-title r" data-i18n="skills.title">Where I'm useful.</h2>
+
+  <div class="skills-grid">
+    <div class="sk-card r">
+      <div class="sk-glyph">⊞</div>
+      <div class="sk-name" data-i18n="skills.s1.name">World Architecture</div>
+      <p class="sk-desc" data-i18n="skills.s1.desc">Building coherent fictional worlds from history to faction politics, from geography to the unwritten rules that make everything feel real. The structure before the story.</p>
+      <div class="sk-tools" data-i18n="skills.s1.tools">World Bible · Lore Systems · Canon Logic</div>
+    </div>
+    <div class="sk-card r">
+      <div class="sk-glyph">◳</div>
+      <div class="sk-name" data-i18n="skills.s2.name">Production Pipeline</div>
+      <p class="sk-desc" data-i18n="skills.s2.desc">Designing the document hierarchy and workflow frameworks that allow a team to build narrative at scale — consistently, coherently, without losing the thread.</p>
+      <div class="sk-tools" data-i18n="skills.s2.tools">Pipeline Design · Doc Hierarchies · Team Workflow</div>
+    </div>
+    <div class="sk-card r">
+      <div class="sk-glyph">◎</div>
+      <div class="sk-name" data-i18n="skills.s3.name">Character Architecture</div>
+      <p class="sk-desc" data-i18n="skills.s3.desc">Characters who hold contradictions. Philosophies that clash with actions. Motivations that reveal themselves slowly. Arcs that earn their conclusions.</p>
+      <div class="sk-tools" data-i18n="skills.s3.tools">Character Sheets · Arc Design · Voice Guidelines</div>
+    </div>
+    <div class="sk-card r">
+      <div class="sk-glyph">⟐</div>
+      <div class="sk-name" data-i18n="skills.s4.name">Branching Systems</div>
+      <p class="sk-desc" data-i18n="skills.s4.desc">Choice architectures where every decision has genuine weight. Not branching for the sake of branching — consequence systems that reshape how the player understands the world.</p>
+      <div class="sk-tools" data-i18n="skills.s4.tools">Twine · Choice Logic · Consequence Mapping</div>
+    </div>
+    <div class="sk-card r">
+      <div class="sk-glyph">⊟</div>
+      <div class="sk-name" data-i18n="skills.s5.name">Environmental Storytelling</div>
+      <p class="sk-desc" data-i18n="skills.s5.desc">Atmospheric documentation, biome identity, spatial narrative. The discipline of making space speak — so history doesn't need to be explained, only found.</p>
+      <div class="sk-tools" data-i18n="skills.s5.tools">Atmospheric Docs · Zone Identity · Spatial Logic</div>
+    </div>
+    <div class="sk-card r">
+      <div class="sk-glyph">≋</div>
+      <div class="sk-name" data-i18n="skills.s6.name">Dialogue & Systems</div>
+      <p class="sk-desc" data-i18n="skills.s6.desc">Dialogue that sounds like people, not characters. Systems that make that dialogue function inside a game engine — technically and emotionally.</p>
+      <div class="sk-tools" data-i18n="skills.s6.tools">GML · Dialogue Trees · Voice Direction</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INTERACTIVE DEMO — SKELETON, DIALOGUE TEXT TO BE WRITTEN BY RYFTAN ══ -->
+<div class="section-wrap" id="demo">
+  <div class="s-label r" data-i18n="demo.label">Try it</div>
+  <h2 class="s-title r" data-i18n="demo.title">A small branching scene.</h2>
+  <p class="demo-intro r" data-i18n="demo.intro">A minimal branching dialogue system — the same logic behind Rocky's collectibles and Too Late's four endings. A short interactive scene is being written for this spot.</p>
+
+  <div class="demo-widget r">
+    <div>
+      <div class="demo-node-label" id="demo-node-label" data-i18n="demo.comingSoonLabel">In progress</div>
+      <div class="demo-text" id="demo-text" data-i18n="demo.comingSoonText">A playable branching scene is coming to this spot — written, not generated. Check back soon.</div>
+    </div>
+    <div class="demo-choices" id="demo-choices"></div>
+  </div>
+</div>
+
+<!-- ══ MANIFESTO ══ -->
+<div class="manifesto-wrap">
+  <div class="manifesto-label r-l" data-i18n="manifesto.label">How I think</div>
+  <div class="manifesto-lines">
+    <p class="manifesto-line r" data-i18n="manifesto.l1">Most of narrative design happens before any dialogue gets written. The player builds the story in their own head, from what you leave for them to find.</p>
+    <p class="manifesto-line r" data-i18n="manifesto.l2">The best characters don't explain themselves. They <em>contradict</em> themselves — and in the contradiction, they become real.</p>
+    <p class="manifesto-line r" data-i18n="manifesto.l3">A world feels alive when every detail has a reason to exist, not when there's simply more of it.</p>
+    <p class="manifesto-line r" data-i18n="manifesto.l4">I'm seventeen. I've already shipped narrative frameworks for a 14-person international studio. I'm not waiting for <em>permission</em> to do this work.</p>
+  </div>
+</div>
+
+<!-- ══ PROOF ══ -->
+<div class="section-wrap" id="proof">
+  <div class="s-label r" data-i18n="proof.label">Proof of work</div>
+  <h2 class="s-title r" data-i18n="proof.title">Not claims.<br><em>Evidence.</em></h2>
+
+  <!-- Contract -->
+  <div class="proof-contract r">
+    <div class="proof-contract-label">
+      <span class="proof-tag" data-i18n="proof.contract.tag">Signed contract · July 2026</span>
+    </div>
+    <div class="proof-contract-body">
+      <div class="proof-contract-left">
+        <div class="proof-contract-title" data-i18n="proof.contract.title">Contributor Agreement</div>
+        <div class="proof-contract-sub">Olympos Games · Tides of Eternity</div>
+        <div class="proof-contract-rows">
+          <div class="proof-row"><span class="proof-row-k" data-i18n="proof.contract.k1">Studio</span><span class="proof-row-v">Olympos Games</span></div>
+          <div class="proof-row"><span class="proof-row-k" data-i18n="proof.contract.k2">Signed by</span><span class="proof-row-v">Mehmet Kayra BAKIRCI — Founder</span></div>
+          <div class="proof-row"><span class="proof-row-k" data-i18n="proof.contract.k3">Role</span><span class="proof-row-v" data-i18n="proof.contract.v3">Narrative Lead</span></div>
+          <div class="proof-row"><span class="proof-row-k" data-i18n="proof.contract.k4">Date</span><span class="proof-row-v">15 / 07 / 2026</span></div>
+          <div class="proof-row"><span class="proof-row-k" data-i18n="proof.contract.k5">Contributor</span><span class="proof-row-v">Ryftan (Jassim Abid)</span></div>
+        </div>
+      </div>
+      <div class="proof-contract-seal">
+        <div class="seal-outer">
+          <div class="seal-inner">
+            <div class="seal-text" data-i18n="proof.seal.text">SIGNED</div>
+            <div class="seal-sub" data-i18n="proof.seal.sub">Legally binding</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document excerpt — ToE -->
+  <div class="proof-doc r">
+    <div class="proof-contract-label">
+      <span class="proof-tag" data-i18n="proof.toe.tag">Narrative Production Framework · Excerpt</span>
+    </div>
+    <div class="proof-doc-meta">
+      <div>
+        <div class="proof-contract-title">Tides of Eternity</div>
+        <div class="proof-contract-sub" data-i18n="proof.toe.sub">Internal Narrative Documentation — Olympos Games</div>
+      </div>
+      <div class="proof-doc-chips">
+        <span class="doc-chip gold">Version 1.0</span>
+        <span class="doc-chip" data-i18n="proof.chip.confidential">Confidential</span>
+        <span class="doc-chip" data-i18n="proof.chip.active">Active Contract</span>
+        <span class="doc-chip" data-i18n="proof.chip.studio14">14-Person Studio</span>
+      </div>
+    </div>
+
+    <div class="excerpt-list">
+      <div class="excerpt-row">
+        <div class="excerpt-idx">01</div>
+        <div>
+          <div class="excerpt-label" data-i18n="proof.toe.e1.label">Core Pillar</div>
+          <p class="excerpt-text" data-i18n="proof.toe.e1.text">Most major characters are not evil — conflict emerges from responsibility, fear, and exhaustion. <em>Tragedy without villainy</em> is a hard rule: even the game's central threat must never read as demonic or sadistic. It is nature reclaiming what was taken from it.</p>
+          <span class="excerpt-ref" data-i18n="proof.toe.e1.ref">Core Narrative Pillars — 2.4 Tragedy Without Villainy</span>
+        </div>
+      </div>
+
+      <div class="excerpt-row">
+        <div class="excerpt-idx">02</div>
+        <div>
+          <div class="excerpt-label" data-i18n="proof.toe.e2.label">Environmental Design</div>
+          <p class="excerpt-text" data-i18n="proof.toe.e2.text">The Hub should feel like <em>controlled authority fraying at the edges</em> — grand and deliberate, but something is wrong, and the player has to feel it without being told. Surfaces that should gleam are dulled. Rituals that should feel powerful feel mechanical.</p>
+          <span class="excerpt-ref" data-i18n="proof.toe.e2.ref">Environmental & Atmospheric Documentation — Hub, Emotional Identity</span>
+        </div>
+      </div>
+
+      <div class="excerpt-row">
+        <div class="excerpt-idx">03</div>
+        <div>
+          <div class="excerpt-label" data-i18n="proof.toe.e3.label">Governing Principle</div>
+          <p class="excerpt-text" data-i18n="proof.toe.e3.text">"The ocean should never feel conquered. Only momentarily understood." This line governs every creative decision in the game — the player is meant to finish reflective and uncertain, transformed by understanding rather than victory.</p>
+          <span class="excerpt-ref" data-i18n="proof.toe.e3.ref">Final Creative Principle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document excerpt -->
+  <div class="proof-doc r">
+    <div class="proof-contract-label">
+      <span class="proof-tag" data-i18n="proof.rk.tag">Narrative Bible · Excerpt</span>
+    </div>
+    <div class="proof-doc-meta">
+      <div>
+        <div class="proof-contract-title">Rocky — The Resistance Rabbit</div>
+        <div class="proof-contract-sub" data-i18n="proof.rk.sub">Narrative Bible & Design Documents</div>
+      </div>
+      <div class="proof-doc-chips">
+        <span class="doc-chip gold">Version 1.0</span>
+        <span class="doc-chip" data-i18n="proof.chip.confidential">Confidential</span>
+        <span class="doc-chip">FR + EN</span>
+        <span class="doc-chip" data-i18n="proof.chip.originalip">Original IP</span>
+      </div>
+    </div>
+
+    <div class="excerpt-list">
+      <div class="excerpt-row">
+        <div class="excerpt-idx">01</div>
+        <div>
+          <div class="excerpt-label" data-i18n="proof.rk.e1.label">World-Building</div>
+          <p class="excerpt-text" data-i18n="proof.rk.e1.text">"The forest wasn't always like this. There are traces of what it used to be." Verdania's forest is written as <em>beautiful and wounded</em> at once — a lush, peaceful woodland where the details slowly betray the exploitation underneath: felled stumps stamped with council ownership, rivers running polluted from pipes hidden beneath the roots.</p>
+          <span class="excerpt-ref" data-i18n="proof.rk.e1.ref">World 1 — The Forest of Verdania</span>
+        </div>
+      </div>
+
+      <div class="excerpt-row">
+        <div class="excerpt-idx">02</div>
+        <div>
+          <div class="excerpt-label" data-i18n="proof.rk.e2.label">Character</div>
+          <p class="excerpt-text" data-i18n="proof.rk.e2.text">Rocky never speaks — the game is silent by design. His entire personality is written to live in reaction: a hesitation, a glance back, a tremble before a difficult jump. <em>Brave without ever being boastful.</em></p>
+          <span class="excerpt-ref" data-i18n="proof.rk.e2.ref">Character Profile — Rocky, Voice & Tone</span>
+        </div>
+      </div>
+
+      <div class="excerpt-row">
+        <div class="excerpt-idx">03</div>
+        <div>
+          <div class="excerpt-label" data-i18n="proof.rk.e3.label">Lore</div>
+          <p class="excerpt-text" data-i18n="proof.rk.e3.text">"Your father asked the same questions. Look where that took him." — President Venal, the moment Rocky learns the truth his parents died for.</p>
+          <span class="excerpt-ref" data-i18n="proof.rk.e3.ref">Act III — The Revelation, Final Confrontation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonial -->
+  <div class="testimonials-grid single">
+
+    <div class="testi-card r">
+      <div class="testi-quote-mark">"</div>
+      <blockquote class="testi-text" data-i18n="proof.testi.text">
+        Working with Ryftan on Tides of Eternity has been a genuinely great experience. He brought a very strong system-level approach to narrative design and helped us structure the narrative side of the project in a much more cohesive and production-friendly way. The quality and depth of the documents he delivered were extremely impressive, especially regarding environmental storytelling, thematic consistency, and cross-department narrative integration. He was also very fast, organized, and reliable throughout the process, consistently delivering detailed work with clear structure and communication.
+      </blockquote>
+      <div class="testi-author">
+        <div class="testi-author-name">Kayra_gtp</div>
+        <div class="testi-author-role" data-i18n="proof.testi.role">Founder · Olympos Games · Tides of Eternity</div>
+        <div class="testi-author-date">May 27, 2026</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SERVICES & RATES ══ -->
+<div class="section-wrap" id="services">
+  <div class="s-label r" data-i18n="services.label">Services & Rates</div>
+  <h2 class="s-title r" data-i18n="services.title">What it costs, roughly.</h2>
+
+  <div class="services-list">
+    <div class="service-item r">
+      
+      <div>
+        <div class="service-name" data-i18n="services.s1.name">Narrative Bible</div>
+        <p class="service-desc" data-i18n="services.s1.desc">Full world, characters, story arc, and design guide for a game project — synopsis, character architecture, level-by-level narrative breakdown, and art direction notes.</p>
+      </div>
+      <div class="service-meta">
+        <div class="service-price" data-i18n="services.s1.price">From 150€</div>
+        <div class="service-time" data-i18n="services.s1.time">1–2 weeks</div>
+      </div>
+    </div>
+
+    <div class="service-item r">
+      
+      <div>
+        <div class="service-name" data-i18n="services.s2.name">Character & World Design</div>
+        <p class="service-desc" data-i18n="services.s2.desc">Focused character sheets, factions, or world-building — without the full production bible. Good fit for a jam project or a specific narrative gap.</p>
+      </div>
+      <div class="service-meta">
+        <div class="service-price" data-i18n="services.s2.price">From 90€</div>
+        <div class="service-time" data-i18n="services.s2.time">3–5 days</div>
+      </div>
+    </div>
+
+    <div class="service-item r">
+      
+      <div>
+        <div class="service-name" data-i18n="services.s3.name">Environmental & Atmospheric Documentation</div>
+        <p class="service-desc" data-i18n="services.s3.desc">Region-by-region emotional and sensory design framework for environment artists, level designers, and sound teams — what a space should make the player feel, and why.</p>
+      </div>
+      <div class="service-meta">
+        <div class="service-price" data-i18n="services.s3.price">From 120€</div>
+        <div class="service-time" data-i18n="services.s3.time">1 week</div>
+      </div>
+    </div>
+
+    <div class="service-item r">
+      
+      <div>
+        <div class="service-name" data-i18n="services.s4.name">Production Pipeline & Framework</div>
+        <p class="service-desc" data-i18n="services.s4.desc">Narrative department structure for a growing team — phase-based production system, cross-department integration docs, ownership structure.</p>
+      </div>
+      <div class="service-meta">
+        <div class="service-price" data-i18n="services.s4.price">From 200€</div>
+        <div class="service-time" data-i18n="services.s4.time">1–2 weeks</div>
+      </div>
+    </div>
+
+    <div class="service-item r">
+      
+      <div>
+        <div class="service-name" data-i18n="services.s5.name">Full Narrative Package</div>
+        <p class="service-desc" data-i18n="services.s5.desc">Bible, pipeline, and environmental documentation combined — for teams building a project's narrative foundation from scratch.</p>
+      </div>
+      <div class="service-meta">
+        <div class="service-price" data-i18n="services.s5.price">Custom quote</div>
+        <div class="service-time" data-i18n="services.s5.time">Scope call first</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="services-footnote r" data-i18n="services.footnote">Prices are starting points — final quotes depend on scope, length, and deadline. Every project starts with a short call to scope the work before anything is priced.</p>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div class="contact-wrap" id="contact">
+  <div class="contact-left">
+    <h2 class="contact-title r" data-i18n="contact.title">Tell me about<br>your project.</h2>
+    <p class="contact-sub r" data-i18n="contact.sub">Available for narrative design mandates — world-building, production pipelines, character systems, and dialogue architecture. Based in Lyon, working internationally.</p>
+
+    <div class="rate-card r">
+      <div class="rate-row">
+        <span class="rate-label" data-i18n="contact.bookCall">Book a call</span>
+      </div>
+      <p class="rate-note" data-i18n="contact.rateNote">30-minute discovery call to scope your project before anything is priced. Full rate breakdown in the <a href="#services" style="color:var(--gold);">Rates section above ↑</a>.</p>
+      <a class="cta-primary" href="https://cal.com/ryftan-nszqsg" target="_blank" rel="noopener" data-i18n="contact.scheduleBtn">Schedule a call →</a>
+    </div>
+  </div>
+  <div class="contact-right">
+    <div class="contact-links r">
+      <form class="contact-form" id="inquiry-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="f-name" data-i18n="contact.form.name">Name</label>
+            <input type="text" id="f-name" placeholder="Your name" data-i18n-placeholder="contact.form.namePh" required>
+          </div>
+          <div class="form-field">
+            <label for="f-email" data-i18n="contact.form.email">Email</label>
+            <input type="email" id="f-email" placeholder="you@studio.com" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="f-type" data-i18n="contact.form.type">Project type</label>
+          <select id="f-type">
+            <option data-i18n="contact.form.opt1">Narrative bible</option>
+            <option data-i18n="contact.form.opt2">Production pipeline / framework</option>
+            <option data-i18n="contact.form.opt3">Environmental documentation</option>
+            <option data-i18n="contact.form.opt4">Character & world design</option>
+            <option data-i18n="contact.form.opt5">Other</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="f-msg" data-i18n="contact.form.msg">Message</label>
+          <textarea id="f-msg" placeholder="Tell me about your project — scope, timeline, budget if you have one." data-i18n-placeholder="contact.form.msgPh" required></textarea>
+        </div>
+
+        <button type="submit" class="form-submit" data-i18n="contact.form.submit">Send inquiry →</button>
+        <p class="form-note" data-i18n="contact.form.note">Opens your email client with everything pre-filled — nothing is sent automatically.</p>
+      </form>
+
+      <div class="contact-quicklinks">
+        <a class="quicklink c-link" href="https://discord.com/users/ryftan.nd" target="_blank" style="border:none;padding:0;">
+          <span class="c-type" data-i18n="contact.discord">Discord</span>
+          <span class="c-val">@ryftan.nd</span>
+        </a>
+        <span class="quicklink" style="border:none;padding:0;">
+          <span class="c-type" data-i18n="contact.replyTime">Reply time</span>
+          <span class="c-val" data-i18n="contact.within48h">Within 48h</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="contact-calendar r">
+      <div class="contact-calendar-label" data-i18n="contact.calendarLabel">Or pick a time directly</div>
+      <div class="contact-calendar-box">
+        <div id="cal-inline"></div>
+        <noscript>
+          <div class="contact-calendar-fallback">Enable JavaScript to see live availability, or use <a href="https://cal.com/ryftan-nszqsg" target="_blank" rel="noopener" style="color:var(--gold);">cal.com/ryftan-nszqsg</a> directly.</div>
+        </noscript>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-l">Ryftan · Dusk Harbor · Lyon, France · SIREN 104826599</div>
+  <div class="f-r" data-i18n="footer.rights">© 2026 · All rights reserved</div>
+</footer>
+
+<script>
+// ── I18N
+const translations = {
+  "nav.about": { en: "About", fr: "À propos" },
+  "nav.work": { en: "Work", fr: "Travaux" },
+  "nav.method": { en: "Method", fr: "Méthode" },
+  "nav.skills": { en: "Skills", fr: "Compétences" },
+  "nav.rates": { en: "Rates", fr: "Tarifs" },
+  "nav.demo": { en: "Demo", fr: "Démo" },
+  "demo.label": { en: "Try it", fr: "Essaie" },
+  "demo.title": { en: "A small branching scene.", fr: "Une petite scène à embranchements." },
+  "demo.intro": { en: "A minimal branching dialogue system — the same logic behind Rocky's collectibles and Too Late's four endings. A short interactive scene is being written for this spot.", fr: "Un système de dialogue à embranchements minimal — la même logique que derrière les collectibles de Rocky et les quatre fins de Too Late. Une courte scène interactive est en cours d'écriture pour cet emplacement." },
+  "demo.comingSoonLabel": { en: "In progress", fr: "En cours" },
+  "demo.comingSoonText": { en: "A playable branching scene is coming to this spot — written, not generated. Check back soon.", fr: "Une scène jouable à embranchements arrive à cet emplacement — écrite, pas générée. Repasse bientôt." },
+  "nav.contact": { en: "Contact", fr: "Contact" },
+  "nav.open": { en: "Open to work", fr: "Disponible" },
+
+  "hero.eyebrow": { en: "Narrative Designer · Dusk Harbor · Lyon, France", fr: "Narrative Designer · Dusk Harbor · Lyon, France" },
+  "hero.tagline": { en: "Narrative design for games — world-building, character systems,<br>and the production docs that hold a story together.", fr: "Narrative design pour jeux vidéo — world-building, systèmes de personnages,<br>et les documents de production qui tiennent une histoire debout." },
+  "hero.contract": { en: "Under contract — <strong>Tides of Eternity · Olympos Games</strong>", fr: "Sous contrat — <strong>Tides of Eternity · Olympos Games</strong>" },
+  "hero.scroll": { en: "Scroll to explore", fr: "Défiler pour explorer" },
+
+  "about.label": { en: "About", fr: "À propos" },
+  "about.title": { en: "A bit about the work.", fr: "Un peu sur le travail." },
+  "about.p1": { en: "I'm a <strong>narrative designer</strong> operating under <strong>Dusk Harbor</strong> — a studio built on the conviction that the best game stories are constructed, not written. Architecture first. Voice after.", fr: "Je suis <strong>narrative designer</strong>, sous le nom de <strong>Dusk Harbor</strong> — un studio construit sur une conviction : les meilleures histoires de jeu vidéo se construisent, elles ne s'écrivent pas. L'architecture d'abord. La voix ensuite." },
+  "about.p2": { en: "My work starts where most writers stop: the frameworks, systems, and pipelines that make a narrative coherent at every level of production. I think in hierarchies — creative vision, world logic, character architecture, then dialogue.", fr: "Mon travail commence là où la plupart des auteurs s'arrêtent : les frameworks, systèmes et pipelines qui rendent une narration cohérente à chaque niveau de production. Je pense en hiérarchies — vision créative, logique du monde, architecture des personnages, puis dialogue." },
+  "about.p3": { en: "Currently under contract with <strong>Olympos Games</strong> (Turkey) as Narrative Lead on <em>Tides of Eternity</em>, directing 2-3 other narrative designers off the frameworks I built for the project — a 14-person action-RPG roguelite targeting Steam in mid-2028.", fr: "Actuellement sous contrat avec <strong>Olympos Games</strong> (Turquie) en tant que Narrative Lead sur <em>Tides of Eternity</em>, dirigeant 2-3 autres narrative designers à partir des frameworks que j'ai construits pour le projet — un action-RPG roguelite développé par une équipe de 14 personnes, visant une sortie sur Steam mi-2028." },
+  "about.quote": { en: "\"A world that feels real doesn't explain itself. It just exists — and everything in it knows why.\"", fr: "« Un monde qui semble réel ne s'explique pas. Il existe, tout simplement — et chaque chose en lui sait pourquoi. »" },
+  "about.quoteAttr": { en: "— On narrative architecture", fr: "— Sur l'architecture narrative" },
+  "about.stat1": { en: "Active projects in production", fr: "Projets actifs en production" },
+  "about.stat2": { en: "Major documents delivered", fr: "Documents majeurs livrés" },
+  "about.stat3": { en: "Narrative designers directed", fr: "Narrative designers dirigés" },
+  "about.stat4": { en: "Years old. Starting early.", fr: "Ans. Un départ précoce." },
+  "about.contractPill": { en: "Active contract", fr: "Contrat actif" },
+  "about.contractMeta": { en: "Signed July 2026 · Narrative Lead<br>14-person international studio · Turkey<br>Delivered: Narrative Architecture, 14-phase Pipeline, Environmental Framework<br>Target: PC / Steam · Mid-2028", fr: "Signé juillet 2026 · Narrative Lead<br>Studio international de 14 personnes · Turquie<br>Livré : Architecture narrative, Pipeline en 14 phases, Framework environnemental<br>Cible : PC / Steam · Mi-2028" },
+
+  "work.toe.tag": { en: "Action-RPG Roguelite · Olympos Games · Turkey · 2026", fr: "Action-RPG Roguelite · Olympos Games · Turquie · 2026" },
+  "work.toe.desc": { en: "Complete narrative architecture for a 14-person international studio building a Greek mythology-inspired action-RPG. My mandate: design the full production framework before a single piece of content was written — the foundation everything else would rest on.", fr: "Architecture narrative complète pour un studio international de 14 personnes développant un action-RPG inspiré de la mythologie grecque. Mon mandat : concevoir tout le framework de production avant qu'une seule ligne de contenu ne soit écrite — la fondation sur laquelle tout le reste reposerait." },
+  "work.toe.d1": { en: "Integral Narrative Architecture Document", fr: "Document d'architecture narrative intégrale" },
+  "work.toe.d2": { en: "Narrative Design Pipeline — 14 production phases", fr: "Pipeline de narrative design — 14 phases de production" },
+  "work.toe.d3": { en: "Narrative Production Framework", fr: "Framework de production narrative" },
+  "work.toe.d4": { en: "Environmental & Atmospheric Documentation", fr: "Documentation environnementale & atmosphérique" },
+  "work.toe.c1": { en: "Architecture", fr: "Architecture" },
+  "work.toe.c2": { en: "Pipeline", fr: "Pipeline" },
+  "work.toe.c3": { en: "World-Building", fr: "World-Building" },
+  "work.toe.c4": { en: "Env. Design", fr: "Design Env." },
+  "work.toe.status": { en: "● Active", fr: "● Actif" },
+
+  "work.tl.tag": { en: "Psychological Horror · Dusk Harbor · Original IP · In Development", fr: "Horreur Psychologique · Dusk Harbor · IP Originale · En Développement" },
+  "work.tl.desc": { en: "A solo-developed psychological horror game built in GameMaker. A person walks home alone through a forest at night, receiving increasingly disturbing text messages. Four endings, each anchored to a distinct philosophical proposition. The question isn't what's in the forest — it's whether the mind can survive not knowing.", fr: "Un jeu d'horreur psychologique développé en solo sous GameMaker. Une personne rentre seule chez elle à travers une forêt, la nuit, recevant des messages de plus en plus inquiétants. Quatre fins, chacune ancrée dans une proposition philosophique distincte. La question n'est pas ce qu'il y a dans la forêt — c'est si l'esprit peut survivre à ne pas savoir." },
+  "work.tl.d1": { en: "Original concept, narrative design & game development", fr: "Concept original, narrative design & développement du jeu" },
+  "work.tl.d2": { en: "Four-ending philosophical structure", fr: "Structure philosophique à quatre fins" },
+  "work.tl.d3": { en: "Dialogue system — Undertale-influenced, letter-by-letter", fr: "Système de dialogue — inspiré d'Undertale, lettre par lettre" },
+  "work.tl.d4": { en: "Playable demo — coming to itch.io", fr: "Démo jouable — bientôt sur itch.io" },
+  "work.tl.c1": { en: "Original IP", fr: "IP Originale" },
+  "work.tl.c2": { en: "Horror", fr: "Horreur" },
+  "work.tl.c3": { en: "Game Dev", fr: "Game Dev" },
+  "work.tl.c4": { en: "4 Endings", fr: "4 Fins" },
+  "work.tl.status": { en: "◈ In Dev", fr: "◈ En Dev" },
+
+  "work.rk.tag": { en: "2D Platformer · Narrative Bible · French & English", fr: "Plateformer 2D · Bible Narrative · Français & Anglais" },
+  "work.rk.desc": { en: "A rabbit. A nation built on lies. A government that forgot the people it was built for. Full narrative bible for a 2D platformer set in the fictional country of Verdania — world-building, character architecture, faction systems, and two alternate endings with distinct ideological conclusions. Delivered in both French and English.", fr: "Un lapin. Une nation bâtie sur des mensonges. Un gouvernement qui a oublié le peuple pour lequel il a été créé. Bible narrative complète pour un plateformer 2D situé dans le pays fictif de Verdania — world-building, architecture des personnages, systèmes de factions, et deux fins alternatives aux conclusions idéologiques distinctes. Livrée en français et en anglais." },
+  "work.rk.d1": { en: "Full narrative bible — FR & EN", fr: "Bible narrative complète — FR & EN" },
+  "work.rk.d2": { en: "Character architecture — protagonist, antagonists, supporting cast", fr: "Architecture des personnages — protagoniste, antagonistes, personnages secondaires" },
+  "work.rk.d3": { en: "Faction & political system design", fr: "Design des factions & du système politique" },
+  "work.rk.d4": { en: "Dual ending structure with philosophical divergence", fr: "Structure à double fin avec divergence philosophique" },
+  "work.rk.c1": { en: "World-Building", fr: "World-Building" },
+  "work.rk.c2": { en: "Characters", fr: "Personnages" },
+  "work.rk.c3": { en: "Bilingual", fr: "Bilingue" },
+  "work.rk.c4": { en: "Dual Ending", fr: "Double Fin" },
+  "work.rk.status": { en: "✓ Delivered", fr: "✓ Livré" },
+
+  "work.archiveText": { en: "Additional narrative documents — character psychology sheets, faction relationship matrices, and dialogue voice profiles — <strong>available on request</strong>. Some work is under NDA or partner confidentiality.", fr: "D'autres documents narratifs — fiches de psychologie des personnages, matrices de relations entre factions, profils de voix pour le dialogue — <strong>disponibles sur demande</strong>. Une partie du travail est protégée par NDA ou confidentialité partenaire." },
+  "work.archiveTag": { en: "8 documents delivered to date", fr: "8 documents livrés à ce jour" },
+
+  "method.label": { en: "From the Tides of Eternity contract", fr: "Issu du contrat Tides of Eternity" },
+  "method.title": { en: "How I actually work.", fr: "Comment je travaille vraiment." },
+  "method.intro": { en: "Before a single line of dialogue was written, Olympos Games needed a framework the whole narrative department could build on. This is a condensed look at what I designed: four governing pillars, and the 14-phase production pipeline that structures every document that follows.", fr: "Avant qu'une seule ligne de dialogue ne soit écrite, Olympos Games avait besoin d'un framework sur lequel tout le département narratif pourrait s'appuyer. Voici un aperçu condensé de ce que j'ai conçu : quatre piliers directeurs, et le pipeline de production en 14 phases qui structure chaque document qui en découle." },
+  "method.p1.name": { en: "The World Remembers", fr: "Le Monde Se Souvient" },
+  "method.p1.desc": { en: "Persistent consequence is the spine of the design. Player actions alter relationships, modify environments, and echo later — even the small ones. Nothing disappears completely.", fr: "La conséquence persistante est l'épine dorsale du design. Les actions du joueur altèrent les relations, modifient les environnements, et résonnent plus tard — même les plus petites. Rien ne disparaît complètement." },
+  "method.p2.name": { en: "Emotional Ambiguity", fr: "Ambiguïté Émotionnelle" },
+  "method.p2.desc": { en: "No good/evil binaries. Characters carry understandable motivations, contradictions, and vulnerabilities — the player should genuinely debate their own choices afterward.", fr: "Aucune binarité bien/mal. Les personnages portent des motivations compréhensibles, des contradictions, des vulnérabilités — le joueur doit sincèrement débattre de ses propres choix après coup." },
+  "method.p3.name": { en: "Discovery Through Observation", fr: "Découverte Par L'Observation" },
+  "method.p3.desc": { en: "The story rarely over-explains itself. Architecture, tone, and recurring symbols reveal information progressively — the player investigates, rather than gets told.", fr: "L'histoire ne se sur-explique presque jamais. L'architecture, le ton et les symboles récurrents révèlent l'information progressivement — le joueur enquête, plutôt qu'on ne le lui raconte." },
+  "method.p4.name": { en: "Narrative Integration", fr: "Intégration Narrative" },
+  "method.p4.desc": { en: "Story isn't placed on top of gameplay — story is gameplay. Mechanics and progression systems are built to reinforce the same themes the narrative is carrying.", fr: "L'histoire n'est pas posée sur le gameplay — l'histoire est le gameplay. Les mécaniques et systèmes de progression sont construits pour renforcer les mêmes thèmes que porte la narration." },
+
+  "phase.1": { en: "Core Foundation", fr: "Fondation Centrale" },
+  "phase.2": { en: "World History", fr: "Histoire du Monde" },
+  "phase.3": { en: "Faction Structures", fr: "Structures de Factions" },
+  "phase.4": { en: "Character Psychology", fr: "Psychologie des Personnages" },
+  "phase.5": { en: "Main Story Structure", fr: "Structure de l'Histoire Principale" },
+  "phase.6": { en: "Gameplay Integration", fr: "Intégration au Gameplay" },
+  "phase.7": { en: "Environmental Storytelling", fr: "Narration Environnementale" },
+  "phase.8": { en: "Dialogue Systems", fr: "Systèmes de Dialogue" },
+  "phase.9": { en: "Enemy Lore", fr: "Lore des Ennemis" },
+  "phase.10": { en: "Memory & Consequence", fr: "Mémoire & Conséquence" },
+  "phase.11": { en: "Optional Lore", fr: "Lore Optionnel" },
+  "phase.12": { en: "Cutscene Docs", fr: "Docs de Cinématiques" },
+  "phase.13": { en: "Voice & Tone", fr: "Voix & Ton" },
+  "phase.14": { en: "Production Priorities", fr: "Priorités de Production" },
+
+  "skills.label": { en: "Capabilities", fr: "Compétences" },
+  "skills.title": { en: "Where I'm useful.", fr: "Où je suis utile." },
+  "skills.s1.name": { en: "World Architecture", fr: "Architecture de Monde" },
+  "skills.s1.desc": { en: "Building coherent fictional worlds from history to faction politics, from geography to the unwritten rules that make everything feel real. The structure before the story.", fr: "Construire des mondes fictifs cohérents, de l'histoire à la politique des factions, de la géographie aux règles non écrites qui rendent tout crédible. La structure avant l'histoire." },
+  "skills.s1.tools": { en: "World Bible · Lore Systems · Canon Logic", fr: "Bible du Monde · Systèmes de Lore · Logique de Canon" },
+  "skills.s2.name": { en: "Production Pipeline", fr: "Pipeline de Production" },
+  "skills.s2.desc": { en: "Designing the document hierarchy and workflow frameworks that allow a team to build narrative at scale — consistently, coherently, without losing the thread.", fr: "Concevoir la hiérarchie documentaire et les frameworks de workflow qui permettent à une équipe de construire une narration à grande échelle — avec constance, cohérence, sans perdre le fil." },
+  "skills.s2.tools": { en: "Pipeline Design · Doc Hierarchies · Team Workflow", fr: "Design de Pipeline · Hiérarchies de Docs · Workflow d'Équipe" },
+  "skills.s3.name": { en: "Character Architecture", fr: "Architecture de Personnages" },
+  "skills.s3.desc": { en: "Characters who hold contradictions. Philosophies that clash with actions. Motivations that reveal themselves slowly. Arcs that earn their conclusions.", fr: "Des personnages qui portent des contradictions. Des philosophies qui entrent en conflit avec les actes. Des motivations qui se révèlent lentement. Des arcs qui méritent leur conclusion." },
+  "skills.s3.tools": { en: "Character Sheets · Arc Design · Voice Guidelines", fr: "Fiches Personnages · Design d'Arcs · Lignes Directrices de Voix" },
+  "skills.s4.name": { en: "Branching Systems", fr: "Systèmes de Branches" },
+  "skills.s4.desc": { en: "Choice architectures where every decision has genuine weight. Not branching for the sake of branching — consequence systems that reshape how the player understands the world.", fr: "Des architectures de choix où chaque décision a un vrai poids. Pas de ramification pour la ramification — des systèmes de conséquences qui refaçonnent la compréhension du monde par le joueur." },
+  "skills.s4.tools": { en: "Twine · Choice Logic · Consequence Mapping", fr: "Twine · Logique de Choix · Cartographie des Conséquences" },
+  "skills.s5.name": { en: "Environmental Storytelling", fr: "Narration Environnementale" },
+  "skills.s5.desc": { en: "Atmospheric documentation, biome identity, spatial narrative. The discipline of making space speak — so history doesn't need to be explained, only found.", fr: "Documentation atmosphérique, identité des biomes, narration spatiale. La discipline de faire parler l'espace — pour que l'histoire n'ait pas besoin d'être expliquée, seulement découverte." },
+  "skills.s5.tools": { en: "Atmospheric Docs · Zone Identity · Spatial Logic", fr: "Docs Atmosphériques · Identité de Zone · Logique Spatiale" },
+  "skills.s6.name": { en: "Dialogue & Systems", fr: "Dialogue & Systèmes" },
+  "skills.s6.desc": { en: "Dialogue that sounds like people, not characters. Systems that make that dialogue function inside a game engine — technically and emotionally.", fr: "Des dialogues qui sonnent comme de vraies personnes, pas comme des personnages. Des systèmes qui font fonctionner ce dialogue dans un moteur de jeu — techniquement et émotionnellement." },
+  "skills.s6.tools": { en: "GML · Dialogue Trees · Voice Direction", fr: "GML · Arbres de Dialogue · Direction de Voix" },
+
+  "manifesto.label": { en: "How I think", fr: "Comment je pense" },
+  "manifesto.l1": { en: "Most of narrative design happens before any dialogue gets written. The player builds the story in their own head, from what you leave for them to find.", fr: "L'essentiel du narrative design se joue avant qu'un seul dialogue ne soit écrit. Le joueur construit l'histoire dans sa propre tête, à partir de ce qu'on lui laisse à découvrir." },
+  "manifesto.l2": { en: "The best characters don't explain themselves. They <em>contradict</em> themselves — and in the contradiction, they become real.", fr: "Les meilleurs personnages ne s'expliquent pas. Ils se <em>contredisent</em> — et c'est dans la contradiction qu'ils deviennent réels." },
+  "manifesto.l3": { en: "A world feels alive when every detail has a reason to exist, not when there's simply more of it.", fr: "Un monde semble vivant quand chaque détail a une raison d'exister, pas quand il y en a simplement davantage." },
+  "manifesto.l4": { en: "I'm seventeen. I've already shipped narrative frameworks for a 14-person international studio. I'm not waiting for <em>permission</em> to do this work.", fr: "J'ai dix-sept ans. J'ai déjà livré des frameworks narratifs pour un studio international de 14 personnes. Je n'attends pas la <em>permission</em> de faire ce travail." },
+
+  "proof.label": { en: "Proof of work", fr: "Preuves de travail" },
+  "proof.title": { en: "Not claims.<br><em>Evidence.</em>", fr: "Pas des affirmations.<br><em>Des preuves.</em>" },
+  "proof.contract.tag": { en: "Signed contract · July 2026", fr: "Contrat signé · Juillet 2026" },
+  "proof.contract.title": { en: "Contributor Agreement", fr: "Accord de Contribution" },
+  "proof.contract.k1": { en: "Studio", fr: "Studio" },
+  "proof.contract.k2": { en: "Signed by", fr: "Signé par" },
+  "proof.contract.k3": { en: "Role", fr: "Rôle" },
+  "proof.contract.v3": { en: "Narrative Lead", fr: "Narrative Lead" },
+  "proof.contract.k4": { en: "Date", fr: "Date" },
+  "proof.contract.k5": { en: "Contributor", fr: "Contributeur" },
+  "proof.seal.text": { en: "SIGNED", fr: "SIGNÉ" },
+  "proof.seal.sub": { en: "Legally binding", fr: "Juridiquement contraignant" },
+
+  "proof.toe.tag": { en: "Narrative Production Framework · Excerpt", fr: "Framework de Production Narrative · Extrait" },
+  "proof.toe.sub": { en: "Internal Narrative Documentation — Olympos Games", fr: "Documentation Narrative Interne — Olympos Games" },
+  "proof.chip.confidential": { en: "Confidential", fr: "Confidentiel" },
+  "proof.chip.active": { en: "Active Contract", fr: "Contrat Actif" },
+  "proof.chip.studio14": { en: "14-Person Studio", fr: "Studio de 14 Personnes" },
+  "proof.chip.originalip": { en: "Original IP", fr: "IP Originale" },
+  "proof.toe.e1.label": { en: "Core Pillar", fr: "Pilier Central" },
+  "proof.toe.e1.text": { en: "Most major characters are not evil — conflict emerges from responsibility, fear, and exhaustion. <em>Tragedy without villainy</em> is a hard rule: even the game's central threat must never read as demonic or sadistic. It is nature reclaiming what was taken from it.", fr: "La plupart des personnages majeurs ne sont pas mauvais — le conflit naît de la responsabilité, de la peur et de l'épuisement. La <em>tragédie sans méchanceté</em> est une règle stricte : même la menace centrale du jeu ne doit jamais paraître démoniaque ou sadique. C'est la nature qui reprend ce qui lui a été pris." },
+  "proof.toe.e1.ref": { en: "Core Narrative Pillars — 2.4 Tragedy Without Villainy", fr: "Piliers Narratifs Centraux — 2.4 Tragédie Sans Méchanceté" },
+  "proof.toe.e2.label": { en: "Environmental Design", fr: "Design Environnemental" },
+  "proof.toe.e2.text": { en: "The Hub should feel like <em>controlled authority fraying at the edges</em> — grand and deliberate, but something is wrong, and the player has to feel it without being told. Surfaces that should gleam are dulled. Rituals that should feel powerful feel mechanical.", fr: "Le Hub doit ressentir comme une <em>autorité contrôlée qui s'effiloche sur les bords</em> — grandiose et délibéré, mais quelque chose cloche, et le joueur doit le ressentir sans qu'on le lui dise. Les surfaces qui devraient briller sont ternes. Les rituels qui devraient sembler puissants semblent mécaniques." },
+  "proof.toe.e2.ref": { en: "Environmental & Atmospheric Documentation — Hub, Emotional Identity", fr: "Documentation Environnementale & Atmosphérique — Hub, Identité Émotionnelle" },
+  "proof.toe.e3.label": { en: "Governing Principle", fr: "Principe Directeur" },
+  "proof.toe.e3.text": { en: "\"The ocean should never feel conquered. Only momentarily understood.\" This line governs every creative decision in the game — the player is meant to finish reflective and uncertain, transformed by understanding rather than victory.", fr: "« L'océan ne doit jamais sembler conquis. Seulement momentanément compris. » Cette ligne gouverne chaque décision créative du jeu — le joueur doit terminer réflexif et incertain, transformé par la compréhension plutôt que par la victoire." },
+  "proof.toe.e3.ref": { en: "Final Creative Principle", fr: "Principe Créatif Final" },
+
+  "proof.rk.tag": { en: "Narrative Bible · Excerpt", fr: "Bible Narrative · Extrait" },
+  "proof.rk.sub": { en: "Narrative Bible & Design Documents", fr: "Bible Narrative & Documents de Design" },
+  "proof.rk.e1.label": { en: "World-Building", fr: "World-Building" },
+  "proof.rk.e1.text": { en: "\"The forest wasn't always like this. There are traces of what it used to be.\" Verdania's forest is written as <em>beautiful and wounded</em> at once — a lush, peaceful woodland where the details slowly betray the exploitation underneath: felled stumps stamped with council ownership, rivers running polluted from pipes hidden beneath the roots.", fr: "« La forêt n'a pas toujours été ainsi. Il en reste des traces. » La forêt de Verdania est écrite comme <em>belle et blessée</em> à la fois — une forêt luxuriante et paisible où les détails trahissent lentement l'exploitation sous-jacente : des souches abattues marquées du sceau du Conseil, des rivières polluées par des tuyaux cachés sous les racines." },
+  "proof.rk.e1.ref": { en: "World 1 — The Forest of Verdania", fr: "Monde 1 — La Forêt de Verdania" },
+  "proof.rk.e2.label": { en: "Character", fr: "Personnage" },
+  "proof.rk.e2.text": { en: "Rocky never speaks — the game is silent by design. His entire personality is written to live in reaction: a hesitation, a glance back, a tremble before a difficult jump. <em>Brave without ever being boastful.</em>", fr: "Rocky ne parle jamais — le jeu est silencieux par conception. Toute sa personnalité est écrite pour vivre dans la réaction : une hésitation, un regard en arrière, un tremblement avant un saut difficile. <em>Courageux sans jamais être vantard.</em>" },
+  "proof.rk.e2.ref": { en: "Character Profile — Rocky, Voice & Tone", fr: "Profil du Personnage — Rocky, Voix & Ton" },
+  "proof.rk.e3.label": { en: "Lore", fr: "Lore" },
+  "proof.rk.e3.text": { en: "\"Your father asked the same questions. Look where that took him.\" — President Venal, the moment Rocky learns the truth his parents died for.", fr: "« Ton père posait les mêmes questions. Regarde où ça l'a mené. » — Président Venal, au moment où Rocky apprend la vérité pour laquelle ses parents sont morts." },
+  "proof.rk.e3.ref": { en: "Act III — The Revelation, Final Confrontation", fr: "Acte III — La Révélation, Confrontation Finale" },
+
+  "proof.testi.text": { en: "Working with Ryftan on Tides of Eternity has been a genuinely great experience. He brought a very strong system-level approach to narrative design and helped us structure the narrative side of the project in a much more cohesive and production-friendly way. The quality and depth of the documents he delivered were extremely impressive, especially regarding environmental storytelling, thematic consistency, and cross-department narrative integration. He was also very fast, organized, and reliable throughout the process, consistently delivering detailed work with clear structure and communication.", fr: "Travailler avec Ryftan sur Tides of Eternity a été une expérience vraiment excellente. Il a apporté une approche systémique très solide du narrative design et nous a aidés à structurer le volet narratif du projet de façon bien plus cohérente et adaptée à la production. La qualité et la profondeur des documents qu'il a livrés étaient extrêmement impressionnantes, en particulier concernant la narration environnementale, la cohérence thématique et l'intégration narrative entre départements. Il a aussi été très rapide, organisé et fiable tout au long du processus, livrant systématiquement un travail détaillé avec une structure et une communication claires." },
+  "proof.testi.role": { en: "Founder · Olympos Games · Tides of Eternity", fr: "Fondateur · Olympos Games · Tides of Eternity" },
+
+  "services.label": { en: "Services & Rates", fr: "Services & Tarifs" },
+  "services.title": { en: "What it costs, roughly.", fr: "Ce que ça coûte, en gros." },
+  "services.s1.name": { en: "Narrative Bible", fr: "Bible Narrative" },
+  "services.s1.desc": { en: "Full world, characters, story arc, and design guide for a game project — synopsis, character architecture, level-by-level narrative breakdown, and art direction notes.", fr: "Monde complet, personnages, arc narratif et guide de design pour un projet de jeu — synopsis, architecture des personnages, découpage narratif niveau par niveau, et notes de direction artistique." },
+  "services.s1.price": { en: "From 150€", fr: "À partir de 150€" },
+  "services.s1.time": { en: "1–2 weeks", fr: "1 à 2 semaines" },
+  "services.s2.name": { en: "Character & World Design", fr: "Personnages & World Design" },
+  "services.s2.desc": { en: "Focused character sheets, factions, or world-building — without the full production bible. Good fit for a jam project or a specific narrative gap.", fr: "Fiches de personnages ciblées, factions, ou world-building — sans la bible de production complète. Idéal pour un projet de jam ou un manque narratif précis." },
+  "services.s2.price": { en: "From 90€", fr: "À partir de 90€" },
+  "services.s2.time": { en: "3–5 days", fr: "3 à 5 jours" },
+  "services.s3.name": { en: "Environmental & Atmospheric Documentation", fr: "Documentation Environnementale & Atmosphérique" },
+  "services.s3.desc": { en: "Region-by-region emotional and sensory design framework for environment artists, level designers, and sound teams — what a space should make the player feel, and why.", fr: "Framework de design émotionnel et sensoriel région par région, pour les artistes environnement, level designers et équipes son — ce qu'un espace doit faire ressentir au joueur, et pourquoi." },
+  "services.s3.price": { en: "From 120€", fr: "À partir de 120€" },
+  "services.s3.time": { en: "1 week", fr: "1 semaine" },
+  "services.s4.name": { en: "Production Pipeline & Framework", fr: "Pipeline & Framework de Production" },
+  "services.s4.desc": { en: "Narrative department structure for a growing team — phase-based production system, cross-department integration docs, ownership structure.", fr: "Structure de département narratif pour une équipe en croissance — système de production par phases, docs d'intégration inter-départements, structure de responsabilités." },
+  "services.s4.price": { en: "From 200€", fr: "À partir de 200€" },
+  "services.s4.time": { en: "1–2 weeks", fr: "1 à 2 semaines" },
+  "services.s5.name": { en: "Full Narrative Package", fr: "Package Narratif Complet" },
+  "services.s5.desc": { en: "Bible, pipeline, and environmental documentation combined — for teams building a project's narrative foundation from scratch.", fr: "Bible, pipeline et documentation environnementale combinés — pour les équipes qui construisent la fondation narrative d'un projet depuis zéro." },
+  "services.s5.price": { en: "Custom quote", fr: "Devis sur mesure" },
+  "services.s5.time": { en: "Scope call first", fr: "Appel de cadrage d'abord" },
+  "services.footnote": { en: "Prices are starting points — final quotes depend on scope, length, and deadline. Every project starts with a short call to scope the work before anything is priced.", fr: "Les prix sont des points de départ — le devis final dépend de l'ampleur, de la longueur et du délai. Chaque projet commence par un court appel de cadrage avant tout chiffrage." },
+
+  "contact.title": { en: "Tell me about<br>your project.", fr: "Parle-moi de<br>ton projet." },
+  "contact.sub": { en: "Available for narrative design mandates — world-building, production pipelines, character systems, and dialogue architecture. Based in Lyon, working internationally.", fr: "Disponible pour des missions de narrative design — world-building, pipelines de production, systèmes de personnages, et architecture de dialogue. Basé à Lyon, travaille à l'international." },
+  "contact.bookCall": { en: "Book a call", fr: "Réserver un appel" },
+  "contact.rateNote": { en: "30-minute discovery call to scope your project before anything is priced. Full rate breakdown in the <a href=\"#services\" style=\"color:var(--gold);\">Rates section above ↑</a>.", fr: "Appel de découverte de 30 minutes pour cadrer ton projet avant tout chiffrage. Détail complet des tarifs dans la <a href=\"#services\" style=\"color:var(--gold);\">section Tarifs ci-dessus ↑</a>." },
+  "contact.scheduleBtn": { en: "Schedule a call →", fr: "Réserver un appel →" },
+  "contact.form.name": { en: "Name", fr: "Nom" },
+  "contact.form.namePh": { en: "Your name", fr: "Ton nom" },
+  "contact.form.email": { en: "Email", fr: "Email" },
+  "contact.form.type": { en: "Project type", fr: "Type de projet" },
+  "contact.form.opt1": { en: "Narrative bible", fr: "Bible narrative" },
+  "contact.form.opt2": { en: "Production pipeline / framework", fr: "Pipeline / framework de production" },
+  "contact.form.opt3": { en: "Environmental documentation", fr: "Documentation environnementale" },
+  "contact.form.opt4": { en: "Character & world design", fr: "Personnages & world design" },
+  "contact.form.opt5": { en: "Other", fr: "Autre" },
+  "contact.form.msg": { en: "Message", fr: "Message" },
+  "contact.form.msgPh": { en: "Tell me about your project — scope, timeline, budget if you have one.", fr: "Parle-moi de ton projet — ampleur, délai, budget si tu en as un." },
+  "contact.form.submit": { en: "Send inquiry →", fr: "Envoyer →" },
+  "contact.form.note": { en: "Opens your email client with everything pre-filled — nothing is sent automatically.", fr: "Ouvre ton client email avec tout pré-rempli — rien n'est envoyé automatiquement." },
+  "contact.calendarLabel": { en: "Or pick a time directly", fr: "Ou choisis un créneau directement" },
+  "contact.discord": { en: "Discord", fr: "Discord" },
+  "contact.replyTime": { en: "Reply time", fr: "Délai de réponse" },
+  "contact.within48h": { en: "Within 48h", fr: "Sous 48h" },
+
+  "footer.rights": { en: "© 2026 · All rights reserved", fr: "© 2026 · Tous droits réservés" },
+};
+
+function applyLanguage(lang) {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const entry = translations[key];
+    if (entry && entry[lang] !== undefined) el.innerHTML = entry[lang];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const entry = translations[key];
+    if (entry && entry[lang] !== undefined) el.setAttribute('placeholder', entry[lang]);
+  });
+  document.documentElement.setAttribute('lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+  try { localStorage.setItem('site-lang', lang); } catch (e) {}
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLanguage(btn.getAttribute('data-lang')));
+});
+
+(function initLang() {
+  let saved = null;
+  try { saved = localStorage.getItem('site-lang'); } catch (e) {}
+  applyLanguage(saved === 'fr' || saved === 'en' ? saved : 'en');
+})();
+
+// ── CURSOR
+const csr = document.getElementById('csr');
+const trail = document.getElementById('csr-trail');
+let tx = 0, ty = 0, cx = 0, cy = 0;
+document.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; csr.style.left = tx+'px'; csr.style.top = ty+'px'; }, {passive:true});
+(function loop(){
+  cx += (tx-cx)*.1; cy += (ty-cy)*.1;
+  trail.style.left = cx+'px'; trail.style.top = cy+'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,.proj-item,.sk-card,.stat-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{trail.style.width='44px';trail.style.height='44px';trail.style.borderColor='rgba(191,155,78,.5)';});
+  el.addEventListener('mouseleave',()=>{trail.style.width='28px';trail.style.height='28px';trail.style.borderColor='rgba(191,155,78,.35)';});
+});
+
+// ── SCROLL REVEAL
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{ if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('in'),i*55); obs.unobserve(e.target); } });
+},{threshold:.08});
+document.querySelectorAll('.r,.r-l').forEach(el=>obs.observe(el));
+if(window.innerWidth<=768) setTimeout(()=>document.querySelectorAll('.r,.r-l').forEach(el=>el.classList.add('in')),200);
+
+// ── CONTACT FORM → MAILTO
+const inquiryForm = document.getElementById('inquiry-form');
+if (inquiryForm) {
+  inquiryForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const type = document.getElementById('f-type').value;
+    const msg = document.getElementById('f-msg').value.trim();
+
+    const subject = `Project inquiry — ${type}`;
+    const body =
+      `Name: ${name}\n` +
+      `Email: ${email}\n` +
+      `Project type: ${type}\n\n` +
+      `${msg}`;
+
+    window.location.href =
+      `mailto:ryftan.psy@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
+}
+
+// ── STAT COUNT-UP
+document.querySelectorAll('.stat-n').forEach(el => {
+  const raw = el.textContent.trim();
+  const match = raw.match(/^(\d+)(.*)$/);
+  if (!match) return;
+  const target = parseInt(match[1], 10);
+  const suffix = match[2];
+  el.textContent = '0' + suffix;
+  const statObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        let start = null;
+        const duration = 1100;
+        function step(ts) {
+          if (!start) start = ts;
+          const progress = Math.min((ts - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(eased * target) + suffix;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+        statObs.unobserve(el);
+      }
+    });
+  }, { threshold: .4 });
+  statObs.observe(el);
+});
+
+// ── BRANCHING DIALOGUE SKELETON ──
+// Edit this object with your own dialogue. Structure rules:
+// - Each key is a node id.
+// - "text" is the line shown to the reader.
+// - "choices" is an array of { label, next } — next must match another node id.
+// - A node with no "choices" (or an empty array) is treated as an ending, and shows a Restart button.
+// - Node ids and structure below are just an example shape — replace freely, keep at least a "start" node.
+//
+// IMPORTANT: once you've written real dialogue below, set demoReady to true
+// so the widget actually renders it instead of showing the "coming soon" message.
+const demoReady = false;
+
+const dialogueTree = {
+  start: {
+    text: "[EDIT ME — opening line. Set the scene in one or two sentences.]",
+    choices: [
+      { label: "[EDIT ME — choice A]", next: "branchA" },
+      { label: "[EDIT ME — choice B]", next: "branchB" },
+    ],
+  },
+  branchA: {
+    text: "[EDIT ME — what happens after choice A.]",
+    choices: [
+      { label: "[EDIT ME — choice A1]", next: "endingA1" },
+      { label: "[EDIT ME — choice A2]", next: "endingA2" },
+    ],
+  },
+  branchB: {
+    text: "[EDIT ME — what happens after choice B.]",
+    choices: [
+      { label: "[EDIT ME — choice B1]", next: "endingB1" },
+      { label: "[EDIT ME — choice B2]", next: "endingB2" },
+    ],
+  },
+  endingA1: { text: "[EDIT ME — ending A1.]", choices: [] },
+  endingA2: { text: "[EDIT ME — ending A2.]", choices: [] },
+  endingB1: { text: "[EDIT ME — ending B1.]", choices: [] },
+  endingB2: { text: "[EDIT ME — ending B2.]", choices: [] },
+};
+
+(function initDemoWidget() {
+  if (!demoReady) return; // leave the "coming soon" message untouched until dialogueTree is written
+
+  const textEl = document.getElementById('demo-text');
+  const choicesEl = document.getElementById('demo-choices');
+  const labelEl = document.getElementById('demo-node-label');
+  if (!textEl || !choicesEl) return;
+
+  function renderNode(nodeId) {
+    const node = dialogueTree[nodeId];
+    if (!node) return;
+
+    textEl.classList.add('fading');
+    setTimeout(() => {
+      textEl.textContent = node.text;
+      labelEl.textContent = 'Node: ' + nodeId;
+      textEl.classList.remove('fading');
+
+      choicesEl.innerHTML = '';
+      const choices = node.choices || [];
+
+      if (choices.length === 0) {
+        const restart = document.createElement('button');
+        restart.className = 'demo-restart';
+        restart.textContent = '↺ Restart';
+        restart.addEventListener('click', () => renderNode('start'));
+        choicesEl.appendChild(restart);
+        return;
+      }
+
+      choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'demo-choice-btn';
+        btn.textContent = choice.label;
+        btn.addEventListener('click', () => renderNode(choice.next));
+        choicesEl.appendChild(btn);
+      });
+    }, 200);
+  }
+
+  renderNode('start');
+})();
+
+// ── CAL.COM INLINE BOOKING EMBED
+(function (C, A, L) {
+  let p = function (a, ar) { a.q.push(ar); };
+  let d = C.document;
+  C.Cal = C.Cal || function () {
+    let cal = C.Cal; let ar = arguments;
+    if (!cal.loaded) {
+      cal.ns = {}; cal.q = cal.q || [];
+      d.head.appendChild(d.createElement("script")).src = A;
+      cal.loaded = true;
+    }
+    if (ar[0] === L) {
+      const api = function () { p(api, arguments); };
+      const namespace = ar[1];
+      api.q = api.q || [];
+      if (typeof namespace === "string") {
+        cal.ns[namespace] = cal.ns[namespace] || api;
+        p(cal.ns[namespace], ar);
+        p(cal, ["initNamespace", namespace]);
+      } else p(cal, ar);
+      return;
+    }
+    p(cal, ar);
+  };
+})(window, "https://app.cal.com/embed/embed.js", "init");
+
+Cal("init", { origin: "https://cal.com" });
+Cal("inline", {
+  elementOrSelector: "#cal-inline",
+  config: { layout: "month_view", theme: "light" },
+  calLink: "ryftan-nszqsg",
+});
+Cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
+</script>
+</body>
+</html>
